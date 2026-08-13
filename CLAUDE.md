@@ -8,9 +8,12 @@ An app developed as part of a Master's thesis to streamline student inquiries an
 
 ## Architecture
 
-- `frontend/` — React app (Vite, React 19). Talks only to the PHP backend's HTTP API; it never calls Supabase directly.
-- `backend/` — PHP API. Sole gateway to the database: it connects to Supabase's Postgres via PDO (`pgsql` driver) and is the only thing that ever talks to Supabase. `backend/public/index.php` is the single front-controller/router (checked against `$_SERVER['REQUEST_URI']`); routes are added there as `if ($uri === '/api/...')` blocks. `backend/config/database.php` exposes `getDbConnection(): PDO`, reading credentials from environment variables loaded via `vlucas/phpdotenv`. `backend/src/` is the PSR-4 root for the `App\` namespace, for backend classes as they're added.
+- `frontend/` — React app (Vite, React 19). Talks to the PHP backend's HTTP API for all data access; it never queries Supabase's database directly. The one exception is auth: the frontend uses `supabase-js` directly against Supabase Auth (login/signup/session refresh) and sends the resulting JWT to PHP on every request.
+- `backend/` — PHP API. Sole gateway to the database: it connects to Supabase's Postgres via PDO (`pgsql` driver) and is the only thing that ever talks to Supabase's data tables. `backend/public/index.php` is the single front-controller/router (checked against `$_SERVER['REQUEST_URI']`); routes are added there as `if ($uri === '/api/...')` blocks. `backend/config/database.php` exposes `getDbConnection(): PDO`, reading credentials from environment variables loaded via `vlucas/phpdotenv`. `backend/src/` is the PSR-4 root for the `App\` namespace, for backend classes as they're added. PHP also verifies the Supabase JWT on each request (stateless, via the project's JWT secret) to identify the caller, and uses the Supabase Auth Admin API (service-role key) to provision faculty/superuser accounts — see `backend/db/migrations/0001_init.sql` for the full rationale.
 - Database credentials live in `backend/.env` (gitignored; `backend/.env.example` documents the required keys). Uses Supabase's **transaction pooler** connection (port 6543), not the direct connection (port 5432).
+- Auth is handled by Supabase Auth, not custom code. `public.users` is a profile table keyed by `UUID REFERENCES auth.users(id)`, not an identity table — it has no password column. A DB trigger (`on_auth_user_created`) creates the profile row on signup, always defaulting `user_type` to `student` regardless of client-supplied metadata; only PHP (via the service-role key) can promote a profile to `faculty`/`superuser`. Row Level Security is enabled with no policies (default-deny) on every table, since the Supabase anon key ships in the frontend bundle for Auth calls — RLS is what stops that key from being used to query tables directly via PostgREST, bypassing PHP.
+- **Postgres hosting is deliberately kept swappable**; Supabase *Auth* is not. `backend/config/database.php` only needs a host/port/user/password/dbname to connect, and the migration SQL is plain Postgres DDL with no Supabase-specific syntax — moving to a different Postgres host is an `.env` change. The one intentional exception is `auth.users` (Supabase Auth's schema), which only exists where Supabase's Auth service runs — accepted as a deliberate trade-off rather than rolling custom auth. If the app is ever forked onto a different provider without Supabase, that's expected to come with revisiting auth too.
+- Database schema/migrations live in `supabase/migrations/` (root-level, not under `backend/`) as plain SQL files, managed via the Supabase CLI (installed as a root-level npm dev dependency — run as `npx supabase ...`, not a global install). `npx supabase link --project-ref <ref>` connects the local repo to the hosted project (one-time, requires interactive login); `npx supabase db push` applies any migrations not yet recorded in the project's `supabase_migrations.schema_migrations` tracking table; `npx supabase migration new <name>` scaffolds a new timestamped file. Because `db push` ultimately just runs SQL against a connection string, the same migrations apply to any Postgres host via `--db-url`, not only a linked Supabase project — consistent with keeping the Postgres hosting itself swappable.
 - CORS in `index.php` is currently hardcoded to allow `http://localhost:5173` (the Vite dev server origin).
 
 ## Commands
@@ -24,6 +27,11 @@ Frontend (`frontend/`):
 Backend (`backend/`):
 - `composer install` — install PHP dependencies
 - `php -S localhost:8000 -t public` — run the API on http://localhost:8000 using PHP's built-in dev server (no Apache/XAMPP vhost needed for local dev, even though XAMPP is the local PHP distribution)
+
+Database (repo root):
+- `npm install` — installs the Supabase CLI (the only purpose of the root `package.json`; it is not part of either app)
+- `npx supabase db push` — apply pending migrations from `supabase/migrations/` to the linked project
+- `npx supabase migration new <name>` — scaffold a new timestamped migration file
 
 No test suite exists yet in either frontend or backend.
 

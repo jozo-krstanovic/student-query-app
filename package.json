@@ -1,0 +1,8 @@
+{
+  "name": "student-query-app",
+  "private": true,
+  "description": "Root tooling for the student-query-app monorepo (Supabase CLI for schema migrations). See frontend/ and backend/ for the app itself.",
+  "devDependencies": {
+    "supabase": "^2.114.0"
+  }
+}
