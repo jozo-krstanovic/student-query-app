@@ -30,8 +30,10 @@ Frontend (`frontend/`):
 
 Backend (`backend/`):
 - `composer install` — install PHP dependencies
-- `php artisan serve` — run the API on http://localhost:8000
+- `php artisan serve --no-reload` — run the API on http://localhost:8000. The `--no-reload` flag matters: without it, Laravel silently ignores `PHP_CLI_SERVER_WORKERS` (see `.env`) and falls back to a single worker, serializing concurrent requests.
 - `php artisan test` — run the PHPUnit suite (`tests/Feature`); uses an in-memory SQLite DB (see `phpunit.xml`), not the real Supabase database
+
+**Known local-dev latency characteristic**: every request to the real Supabase database costs roughly 1s round-trip (network distance to the `eu-central-1` Postgres pooler, not something in the app code — confirmed via direct timing: connection setup alone is ~700-1000ms, a query on an already-open connection is ~300ms). `php artisan serve` re-boots the whole application fresh on every request, so unlike a persistent Node process, there's no long-lived connection for `PDO::ATTR_PERSISTENT` (set in `config/database.php`) to actually stay warm across requests — measured repeatedly, with no improvement over successive requests even with multiple `--no-reload` workers. The JWKS cache (`Cache::remember('supabase.jwks', ...)`, `file` driver) *does* work correctly across requests/processes and was ruled out as a contributor. The real fix, if this becomes painful enough to justify it, is Laravel Octane (RoadRunner, not Swoole — Swoole doesn't support Windows without WSL) to keep the app and its DB connections alive across requests; this is a deliberate open question, not yet decided. This is a local-dev-only characteristic — a real deployment has the app server and database co-located, avoiding this latency.
 
 Database (repo root):
 - `npm install` — installs the Supabase CLI (the only purpose of the root `package.json`; it is not part of either app)
