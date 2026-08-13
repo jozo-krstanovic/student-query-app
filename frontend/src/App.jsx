@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from './lib/supabaseClient'
 import { apiFetch } from './lib/api'
 import Auth from './components/Auth'
+import AdminPanel from './components/AdminPanel'
 import './App.css'
 
 function App() {
@@ -44,10 +45,14 @@ function App() {
     <div className="dashboard">
       <h1>Signed in as {session.user.email}</h1>
       {profileError && <p className="error">Backend error: {profileError}</p>}
-      {profile && <pre>{JSON.stringify(profile, null, 2)}</pre>}
       <button type="button" onClick={() => supabase.auth.signOut()}>
         Log out
       </button>
+      {profile?.user_type === 'superuser' ? (
+        <AdminPanel />
+      ) : (
+        profile && <pre>{JSON.stringify(profile, null, 2)}</pre>
+      )}
     </div>
   )
 }

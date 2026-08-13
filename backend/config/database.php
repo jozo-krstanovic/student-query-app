@@ -97,6 +97,14 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // The DB is remote (Supabase), so a fresh TCP+TLS+Postgres
+            // handshake costs ~1s -- persistent connections let a single
+            // long-lived PHP process (e.g. `php artisan serve`) reuse one
+            // connection across requests instead of paying that cost on
+            // every single request.
+            'options' => [
+                PDO::ATTR_PERSISTENT => true,
+            ],
         ],
 
         'sqlsrv' => [

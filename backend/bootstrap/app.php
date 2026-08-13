@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsSuperuser;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // throw RouteNotFoundException (a 500) on every unauthenticated
         // request instead of a clean 401. Disable the redirect entirely.
         $middleware->redirectGuestsTo(fn () => null);
+
+        $middleware->alias(['superuser' => EnsureUserIsSuperuser::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // With the redirect disabled above, an unauthenticated request
