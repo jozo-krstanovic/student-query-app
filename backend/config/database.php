@@ -104,6 +104,14 @@ return [
             // every single request.
             'options' => [
                 PDO::ATTR_PERSISTENT => true,
+                // Supabase's transaction pooler (PgBouncer, transaction mode)
+                // can route a persistent connection's queries to a different
+                // backend Postgres session between requests. Server-side
+                // prepared statements are pinned to one backend, so a stale
+                // one causes "prepared statement requires N parameters"
+                // errors once persistence is actually working. Emulating
+                // prepares client-side avoids the mismatch entirely.
+                PDO::ATTR_EMULATE_PREPARES => true,
             ],
         ],
 
