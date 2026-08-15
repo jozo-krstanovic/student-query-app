@@ -1,10 +1,21 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { SessionProvider } from '@/lib/SessionContext'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { SessionProvider, useSession } from '@/lib/SessionContext'
 import AuthGate from '@/components/layout/AuthGate'
-import Dashboard from '@/components/Dashboard'
+import InquiriesPage from '@/components/InquiriesPage'
+import AdminPanel from '@/components/admin/AdminPanel'
 import AccountPage from '@/components/AccountPage'
 import ResetPasswordPage from '@/components/ResetPasswordPage'
 import NotFoundPage from '@/components/NotFoundPage'
+
+function AdminRoute() {
+  const { profile } = useSession()
+
+  if (profile.user_type !== 'superuser') {
+    return <Navigate to="/" replace />
+  }
+
+  return <AdminPanel />
+}
 
 function App() {
   return (
@@ -16,7 +27,15 @@ function App() {
             path="/"
             element={
               <AuthGate>
-                <Dashboard />
+                <InquiriesPage />
+              </AuthGate>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AuthGate>
+                <AdminRoute />
               </AuthGate>
             }
           />

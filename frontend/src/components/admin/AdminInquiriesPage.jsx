@@ -1,0 +1,117 @@
+import { useEffect, useMemo, useState } from 'react'
+import { apiFetch } from '@/lib/api'
+import FacultyInquiryList from '@/components/faculty/FacultyInquiryList'
+import FacultyInquiryDetail from '@/components/faculty/FacultyInquiryDetail'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All statuses' },
+  { value: 'in_progress', label: 'In progress' },
+  { value: 'completed', label: 'Completed' },
+]
+
+export default function AdminInquiriesPage() {
+  const [view, setView] = useState('list')
+  const [inquiries, setInquiries] = useState([])
+  const [selectedId, setSelectedId] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [roleFilter, setRoleFilter] = useState('all')
+
+  async function refreshList() {
+    try {
+      const { inquiries } = await apiFetch('/api/faculty/inquiries')
+      setInquiries(inquiries)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  useEffect(() => {
+    refreshList().finally(() => setLoading(false))
+  }, [])
+
+  function openDetail(id) {
+    setSelectedId(id)
+    setView('detail')
+  }
+
+  function backToList() {
+    setView('list')
+    refreshList()
+  }
+
+  const roleOptions = useMemo(() => {
+    const roles = new Map()
+    for (const inquiry of inquiries) {
+      const role = inquiry.current_step?.role
+      if (role) roles.set(role.id, role)
+    }
+    return Array.from(roles.values())
+  }, [inquiries])
+
+  const filteredInquiries = inquiries.filter((inquiry) => {
+    if (statusFilter !== 'all' && inquiry.status !== statusFilter) return false
+    if (roleFilter !== 'all' && String(inquiry.current_step?.role?.id) !== roleFilter) return false
+    return true
+  })
+
+  if (loading) {
+    return <p className="p-8 text-sm text-muted-foreground">Loading...</p>
+  }
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-6 p-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {view === 'list' && (
+        <>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <h1 className="text-2xl font-semibold tracking-tight">Inquiries</h1>
+            <div className="flex gap-2">
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder="All roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All roles</SelectItem>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role.id} value={String(role.id)}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <FacultyInquiryList
+            inquiries={filteredInquiries}
+            onSelect={openDetail}
+            layout="grid"
+            emptyMessage="No inquiries match these filters."
+          />
+        </>
+      )}
+
+      {view === 'detail' && <FacultyInquiryDetail inquiryId={selectedId} onBack={backToList} />}
+    </div>
+  )
+}

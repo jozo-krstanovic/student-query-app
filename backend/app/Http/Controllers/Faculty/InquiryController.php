@@ -14,13 +14,18 @@ class InquiryController extends Controller
 {
     public function index(Request $request)
     {
-        $roleId = $request->user()->role_id;
+        $user = $request->user();
 
-        $inquiries = Inquiry::where('status', 'in_progress')
-            ->whereHas('currentStep', fn ($q) => $q->where('role_id', $roleId))
-            ->with(['student', 'subject', 'currentStep.role'])
-            ->orderBy('created_at')
-            ->get();
+        $query = Inquiry::with(['student', 'subject', 'currentStep.role']);
+
+        // Superuser gets full oversight (every inquiry, any status); faculty
+        // gets their own actionable queue (only what's currently at their step).
+        if ($user->user_type !== 'superuser') {
+            $query->where('status', 'in_progress')
+                ->whereHas('currentStep', fn ($q) => $q->where('role_id', $user->role_id));
+        }
+
+        $inquiries = $query->orderBy('created_at')->get();
 
         return response()->json(['status' => 'ok', 'inquiries' => $inquiries]);
     }
@@ -176,9 +181,14 @@ class InquiryController extends Controller
     /**
      * Visible if this role is currently assigned, or was ever assigned in
      * this inquiry's history (past or current step) -- not just anyone.
+     * Superuser has unrestricted oversight of every inquiry.
      */
     private function hasVisibility(Inquiry $inquiry, User $user): bool
     {
+        if ($user->user_type === 'superuser') {
+            return true;
+        }
+
         if (! $user->role_id) {
             return false;
         }
@@ -195,12 +205,17 @@ class InquiryController extends Controller
     /**
      * Step actions (approve/resolve/reset) require the role to be the one
      * *currently* assigned, not just previously involved, plus the
-     * corresponding permission.
+     * corresponding permission. Superuser can act on any in-progress
+     * inquiry's current step regardless of role or permission.
      */
     private function canActOnCurrentStep(Inquiry $inquiry, User $user, string $permission): bool
     {
         if ($inquiry->status !== 'in_progress' || ! $inquiry->currentStep) {
             return false;
+        }
+
+        if ($user->user_type === 'superuser') {
+            return true;
         }
 
         if ($inquiry->currentStep->role_id !== $user->role_id) {
@@ -225,6 +240,10 @@ class InquiryController extends Controller
 
     private function hasPermission(User $user, string $permission): bool
     {
+        if ($user->user_type === 'superuser') {
+            return true;
+        }
+
         if (! $user->role_id) {
             return false;
         }
