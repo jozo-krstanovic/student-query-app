@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InquiryComment extends Model
 {
-    const UPDATED_AT = null;
-
     protected $fillable = [
         'inquiry_id',
         'author_id',

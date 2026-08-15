@@ -16,7 +16,15 @@ class Inquiry extends Model
         'cycle_number',
         'status',
         'body',
+        'body_edited_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'body_edited_at' => 'datetime',
+        ];
+    }
 
     public function student(): BelongsTo
     {

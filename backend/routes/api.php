@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\Faculty\InquiryController as FacultyInquiryController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InquiryController;
@@ -19,10 +20,13 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/subjects', [SubjectController::class, 'index']);
 
+    Route::put('/comments/{comment}', [CommentController::class, 'update']);
+
     Route::middleware('student')->group(function () {
         Route::get('/inquiries', [InquiryController::class, 'index']);
         Route::post('/inquiries', [InquiryController::class, 'store']);
         Route::get('/inquiries/{inquiry}', [InquiryController::class, 'show']);
+        Route::put('/inquiries/{inquiry}', [InquiryController::class, 'update']);
         Route::post('/inquiries/{inquiry}/comments', [InquiryController::class, 'comment']);
     });
 

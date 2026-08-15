@@ -152,6 +152,7 @@ export default function FacultyInquiryDetail({ inquiryId, onBack }) {
             submitting={submittingComment}
             onSubmit={handleComment}
             canComment={can.comment}
+            onCommentUpdated={refresh}
           />
         </>
       )}
