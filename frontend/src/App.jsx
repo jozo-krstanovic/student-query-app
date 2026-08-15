@@ -3,8 +3,9 @@ import { supabase } from '@/lib/supabaseClient'
 import { apiFetch } from '@/lib/api'
 import Auth from '@/components/Auth'
 import AdminPanel from '@/components/admin/AdminPanel'
+import StudentDashboard from '@/components/student/StudentDashboard'
+import FacultyDashboard from '@/components/faculty/FacultyDashboard'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 function App() {
@@ -47,42 +48,31 @@ function App() {
     return <Auth />
   }
 
-  if (profile?.user_type === 'superuser') {
-    return (
-      <div className="min-h-svh">
-        <header className="flex items-center justify-between border-b px-6 py-3">
-          <span className="text-sm text-muted-foreground">Signed in as {session.user.email}</span>
-          <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
-            Log out
-          </Button>
-        </header>
-        <AdminPanel />
-      </div>
-    )
-  }
-
   return (
-    <div className="flex min-h-svh items-center justify-center p-6">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Signed in as {session.user.email}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {profileError && (
-            <Alert variant="destructive">
-              <AlertDescription>Backend error: {profileError}</AlertDescription>
-            </Alert>
-          )}
-          {profile && (
-            <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-xs">
-              {JSON.stringify(profile, null, 2)}
-            </pre>
-          )}
-          <Button variant="outline" className="w-full" onClick={() => supabase.auth.signOut()}>
-            Log out
-          </Button>
-        </CardContent>
-      </Card>
+    <div className="min-h-svh">
+      <header className="flex items-center justify-between border-b px-6 py-3">
+        <span className="text-sm text-muted-foreground">Signed in as {session.user.email}</span>
+        <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
+          Log out
+        </Button>
+      </header>
+
+      {profileError ? (
+        <div className="p-6">
+          <Alert variant="destructive">
+            <AlertDescription>Backend error: {profileError}</AlertDescription>
+          </Alert>
+        </div>
+      ) : (
+        profile &&
+        (profile.user_type === 'superuser' ? (
+          <AdminPanel />
+        ) : profile.user_type === 'faculty' ? (
+          <FacultyDashboard />
+        ) : (
+          <StudentDashboard />
+        ))
+      )}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserIsStudent;
 use App\Http\Middleware\EnsureUserIsSuperuser;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -21,7 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         // request instead of a clean 401. Disable the redirect entirely.
         $middleware->redirectGuestsTo(fn () => null);
 
-        $middleware->alias(['superuser' => EnsureUserIsSuperuser::class]);
+        $middleware->alias([
+            'superuser' => EnsureUserIsSuperuser::class,
+            'student' => EnsureUserIsStudent::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // With the redirect disabled above, an unauthenticated request
