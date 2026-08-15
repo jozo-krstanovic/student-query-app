@@ -8,6 +8,6 @@ class MeController extends Controller
 {
     public function show(Request $request)
     {
-        return response()->json(['status' => 'ok', 'user' => $request->user()]);
+        return response()->json(['status' => 'ok', 'user' => $request->user()->load('role')]);
     }
 }
