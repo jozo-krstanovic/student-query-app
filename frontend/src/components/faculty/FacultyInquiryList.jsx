@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import InquiryStatusBadge from '@/components/inquiry/StatusBadge'
 
 export default function FacultyInquiryList({
   inquiries,
@@ -43,11 +43,7 @@ export default function FacultyInquiryList({
                     {inquiry.student.full_name}
                   </TableCell>
                   <TableCell>
-                    {inquiry.status === 'completed' ? (
-                      <Badge variant="secondary">Completed</Badge>
-                    ) : (
-                      <Badge>In progress</Badge>
-                    )}
+                    <InquiryStatusBadge inquiry={inquiry} showRole={false} />
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {inquiry.current_step?.role?.name ?? '—'}
@@ -72,11 +68,7 @@ export default function FacultyInquiryList({
           <CardContent className="py-4">
             <div className="flex items-center justify-between gap-2">
               <div className="font-medium">{inquiry.subject.name}</div>
-              {inquiry.status === 'completed' ? (
-                <Badge variant="secondary">Completed</Badge>
-              ) : (
-                <Badge>Awaiting {inquiry.current_step?.role?.name ?? '...'}</Badge>
-              )}
+              <InquiryStatusBadge inquiry={inquiry} />
             </div>
             <div className="text-sm text-muted-foreground">From {inquiry.student.full_name}</div>
             <div className="line-clamp-1 text-sm text-muted-foreground">{inquiry.body}</div>

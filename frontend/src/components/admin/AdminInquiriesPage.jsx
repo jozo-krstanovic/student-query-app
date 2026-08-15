@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { LayoutGrid, List } from 'lucide-react'
-import { apiFetch } from '@/lib/api'
+import { useInquiryQueue } from '@/lib/useInquiryQueue'
 import FacultyInquiryList from '@/components/faculty/FacultyInquiryList'
 import FacultyInquiryDetail from '@/components/faculty/FacultyInquiryDetail'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -17,37 +17,11 @@ const STATUS_OPTIONS = [
 ]
 
 export default function AdminInquiriesPage() {
-  const [view, setView] = useState('list')
-  const [inquiries, setInquiries] = useState([])
-  const [selectedId, setSelectedId] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { view, inquiries, selectedId, loading, error, openDetail, backToList } =
+    useInquiryQueue('/api/faculty/inquiries')
   const [statusFilter, setStatusFilter] = useState('all')
   const [roleFilter, setRoleFilter] = useState('all')
   const [viewMode, setViewMode] = useState('card')
-
-  async function refreshList() {
-    try {
-      const { inquiries } = await apiFetch('/api/faculty/inquiries')
-      setInquiries(inquiries)
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  useEffect(() => {
-    refreshList().finally(() => setLoading(false))
-  }, [])
-
-  function openDetail(id) {
-    setSelectedId(id)
-    setView('detail')
-  }
-
-  function backToList() {
-    setView('list')
-    refreshList()
-  }
 
   const roleOptions = useMemo(() => {
     const roles = new Map()

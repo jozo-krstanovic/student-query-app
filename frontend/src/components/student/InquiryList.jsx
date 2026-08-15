@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import InquiryStatusBadge from '@/components/inquiry/StatusBadge'
 
 export default function InquiryList({ inquiries, onSelect }) {
   if (inquiries.length === 0) {
@@ -26,11 +26,7 @@ export default function InquiryList({ inquiries, onSelect }) {
               <div className="line-clamp-1 text-sm text-muted-foreground">{inquiry.body}</div>
             </div>
             <div className="flex flex-col items-end gap-1">
-              {inquiry.status === 'completed' ? (
-                <Badge variant="secondary">Completed</Badge>
-              ) : (
-                <Badge>Awaiting {inquiry.current_step?.role?.name ?? '...'}</Badge>
-              )}
+              <InquiryStatusBadge inquiry={inquiry} />
             </div>
           </CardContent>
         </Card>

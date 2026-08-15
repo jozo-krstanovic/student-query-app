@@ -2,20 +2,14 @@ import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Separator } from '@/components/ui/separator'
 import LoadingState from '@/components/layout/LoadingState'
+import InquiryStatusBadge from '@/components/inquiry/StatusBadge'
+import InquiryHistoryCard from '@/components/inquiry/HistoryCard'
+import InquiryCommentsCard from '@/components/inquiry/CommentsCard'
 import { ArrowLeft } from 'lucide-react'
-
-const ACTION_LABELS = {
-  submit: 'Submitted',
-  approve: 'Approved',
-  reset: 'Reset to start',
-  resolve: 'Resolved',
-}
 
 export default function FacultyInquiryDetail({ inquiryId, onBack }) {
   const [inquiry, setInquiry] = useState(null)
@@ -98,11 +92,7 @@ export default function FacultyInquiryDetail({ inquiryId, onBack }) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>{inquiry.subject.name}</CardTitle>
-                {inquiry.status === 'completed' ? (
-                  <Badge variant="secondary">Completed</Badge>
-                ) : (
-                  <Badge>Awaiting {inquiry.current_step?.role?.name ?? '...'}</Badge>
-                )}
+                <InquiryStatusBadge inquiry={inquiry} />
               </div>
               <CardDescription>
                 From {inquiry.student.full_name} — submitted {new Date(inquiry.created_at).toLocaleString()}
@@ -153,69 +143,16 @@ export default function FacultyInquiryDetail({ inquiryId, onBack }) {
             </Card>
           )}
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">History</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {inquiry.step_history.map((entry) => (
-                <div key={entry.id} className="text-sm">
-                  <span className="font-medium">{ACTION_LABELS[entry.action] ?? entry.action}</span>
-                  {' by '}
-                  {entry.actor.full_name}
-                  {entry.chain_step?.role && ` (${entry.chain_step.role.name})`}
-                  <span className="text-muted-foreground">
-                    {' — '}
-                    {new Date(entry.created_at).toLocaleString()}
-                  </span>
-                  {entry.note && <div className="text-muted-foreground">{entry.note}</div>}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <InquiryHistoryCard stepHistory={inquiry.step_history} />
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Comments</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {inquiry.comments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No comments yet.</p>
-              ) : (
-                <div className="space-y-3">
-                  {inquiry.comments.map((comment) => (
-                    <div key={comment.id} className="text-sm">
-                      <div className="font-medium">
-                        {comment.author.full_name}
-                        <span className="ml-2 font-normal text-muted-foreground">
-                          {new Date(comment.created_at).toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="whitespace-pre-wrap">{comment.body}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {can.comment && (
-                <>
-                  <Separator />
-                  <form onSubmit={handleComment} className="space-y-2">
-                    <Textarea
-                      value={commentBody}
-                      onChange={(e) => setCommentBody(e.target.value)}
-                      placeholder="Add a comment..."
-                      rows={3}
-                      required
-                    />
-                    <Button type="submit" size="sm" disabled={submittingComment}>
-                      {submittingComment ? 'Posting...' : 'Post comment'}
-                    </Button>
-                  </form>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <InquiryCommentsCard
+            comments={inquiry.comments}
+            commentBody={commentBody}
+            setCommentBody={setCommentBody}
+            submitting={submittingComment}
+            onSubmit={handleComment}
+            canComment={can.comment}
+          />
         </>
       )}
     </div>
