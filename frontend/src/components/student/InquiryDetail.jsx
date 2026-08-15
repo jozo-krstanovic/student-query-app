@@ -8,7 +8,7 @@ import LoadingState from '@/components/layout/LoadingState'
 import InquiryStatusBadge from '@/components/inquiry/StatusBadge'
 import InquiryHistoryCard from '@/components/inquiry/HistoryCard'
 import InquiryCommentsCard from '@/components/inquiry/CommentsCard'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Pencil } from 'lucide-react'
 
 export default function InquiryDetail({ inquiryId, onBack }) {
   const [inquiry, setInquiry] = useState(null)
@@ -95,9 +95,17 @@ export default function InquiryDetail({ inquiryId, onBack }) {
         <>
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <CardTitle>{inquiry.subject.name}</CardTitle>
-                <InquiryStatusBadge inquiry={inquiry} />
+                <div className="flex items-center gap-2">
+                  <InquiryStatusBadge inquiry={inquiry} />
+                  {canEdit && !editingBody && (
+                    <Button variant="outline" size="sm" onClick={startEditBody} className="gap-1">
+                      <Pencil className="size-3.5" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
               </div>
               <CardDescription>
                 Submitted {new Date(inquiry.created_at).toLocaleString()}
@@ -122,14 +130,7 @@ export default function InquiryDetail({ inquiryId, onBack }) {
                   </div>
                 </div>
               ) : (
-                <>
-                  <p className="whitespace-pre-wrap text-sm">{inquiry.body}</p>
-                  {canEdit && (
-                    <Button variant="ghost" size="sm" onClick={startEditBody}>
-                      Edit
-                    </Button>
-                  )}
-                </>
+                <p className="whitespace-pre-wrap text-sm">{inquiry.body}</p>
               )}
             </CardContent>
           </Card>
