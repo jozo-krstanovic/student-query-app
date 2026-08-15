@@ -16,7 +16,7 @@ class CommentController extends Controller
      */
     public function update(Request $request, InquiryComment $comment)
     {
-        if ($comment->author_id !== $request->user()->id) {
+        if (! static::isAuthor($comment->author_id, $request->user()->id)) {
             return response()->json(['status' => 'error', 'message' => 'Forbidden.'], 403);
         }
 
@@ -26,5 +26,14 @@ class CommentController extends Controller
         $comment->load('author');
 
         return response()->json(['status' => 'ok', 'comment' => $comment]);
+    }
+
+    /**
+     * Pure form of the authorship check, kept separate so it's testable
+     * without a database.
+     */
+    public static function isAuthor(string $commentAuthorId, string $userId): bool
+    {
+        return $commentAuthorId === $userId;
     }
 }

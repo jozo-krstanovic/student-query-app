@@ -141,6 +141,21 @@ class InquiryController extends Controller
      */
     private function canEdit(Inquiry $inquiry): bool
     {
-        return $inquiry->stepHistory()->where('action', '!=', 'submit')->doesntExist();
+        return static::bodyIsEditable($inquiry->stepHistory->pluck('action'));
+    }
+
+    /**
+     * Pure form of the same rule, kept separate from the Eloquent-querying
+     * canEdit() so it's testable without a database.
+     */
+    public static function bodyIsEditable(iterable $actions): bool
+    {
+        foreach ($actions as $action) {
+            if ($action !== 'submit') {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
