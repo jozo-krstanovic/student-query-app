@@ -5,28 +5,32 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import RolesTab from './RolesTab'
 import ChainsTab from './ChainsTab'
 import SubjectsTab from './SubjectsTab'
+import UsersTab from './UsersTab'
 
 export default function AdminPanel() {
   const [roles, setRoles] = useState([])
   const [permissions, setPermissions] = useState([])
   const [subjects, setSubjects] = useState([])
   const [chains, setChains] = useState([])
+  const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     async function load() {
       try {
-        const [rolesRes, permissionsRes, subjectsRes, chainsRes] = await Promise.all([
+        const [rolesRes, permissionsRes, subjectsRes, chainsRes, usersRes] = await Promise.all([
           apiFetch('/api/admin/roles'),
           apiFetch('/api/admin/permissions'),
           apiFetch('/api/admin/subjects'),
           apiFetch('/api/admin/chains'),
+          apiFetch('/api/admin/users'),
         ])
         setRoles(rolesRes.roles)
         setPermissions(permissionsRes.permissions)
         setSubjects(subjectsRes.subjects)
         setChains(chainsRes.chains)
+        setUsers(usersRes.users)
       } catch (err) {
         setError(err.message)
       } finally {
@@ -45,7 +49,7 @@ export default function AdminPanel() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Admin</h1>
         <p className="text-sm text-muted-foreground">
-          Manage roles, permissions, approval chains, and subjects.
+          Manage roles, permissions, approval chains, subjects, and users.
         </p>
       </div>
 
@@ -60,6 +64,7 @@ export default function AdminPanel() {
           <TabsTrigger value="roles">Roles</TabsTrigger>
           <TabsTrigger value="chains">Chains</TabsTrigger>
           <TabsTrigger value="subjects">Subjects</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
         </TabsList>
         <TabsContent value="roles">
           <RolesTab roles={roles} setRoles={setRoles} permissions={permissions} setError={setError} />
@@ -69,6 +74,9 @@ export default function AdminPanel() {
         </TabsContent>
         <TabsContent value="subjects">
           <SubjectsTab subjects={subjects} setSubjects={setSubjects} chains={chains} setError={setError} />
+        </TabsContent>
+        <TabsContent value="users">
+          <UsersTab users={users} setUsers={setUsers} roles={roles} setError={setError} />
         </TabsContent>
       </Tabs>
     </div>
