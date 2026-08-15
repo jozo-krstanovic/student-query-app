@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import LoadingState from '@/components/layout/LoadingState'
+import NotFoundPage from '@/components/NotFoundPage'
 import InquiryStatusBadge from '@/components/inquiry/StatusBadge'
 import InquiryHistoryCard from '@/components/inquiry/HistoryCard'
 import InquiryCommentsCard from '@/components/inquiry/CommentsCard'
@@ -14,6 +15,7 @@ export default function InquiryDetail({ inquiryId, onBack }) {
   const [inquiry, setInquiry] = useState(null)
   const [canEdit, setCanEdit] = useState(false)
   const [error, setError] = useState(null)
+  const [notFound, setNotFound] = useState(false)
   const [commentBody, setCommentBody] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
   const [editingBody, setEditingBody] = useState(false)
@@ -26,7 +28,15 @@ export default function InquiryDetail({ inquiryId, onBack }) {
       setInquiry(body.inquiry)
       setCanEdit(body.can_edit)
     } catch (err) {
-      setError(err.message)
+      // Only the initial load (inquiry still null) counts as "not found" --
+      // a later refresh failing (e.g. after posting a comment) should show
+      // an inline error alongside the data already on screen, not blow the
+      // whole view away.
+      if (!inquiry) {
+        setNotFound(true)
+      } else {
+        setError(err.message)
+      }
     }
   }
 
@@ -74,6 +84,10 @@ export default function InquiryDetail({ inquiryId, onBack }) {
     } finally {
       setSubmittingComment(false)
     }
+  }
+
+  if (notFound) {
+    return <NotFoundPage />
   }
 
   return (
