@@ -88,11 +88,11 @@ export default function InquiryCommentsCard({
                   </div>
                   {comment.author_id === profile.id && editingId !== comment.id && (
                     <div className="flex shrink-0 gap-1">
-                      <Button variant="ghost" size="xs" onClick={() => startEdit(comment)}>
+                      <Button variant="outline" size="xs" onClick={() => startEdit(comment)}>
                         Edit
                       </Button>
                       <Button
-                        variant="ghost"
+                        variant="destructive"
                         size="xs"
                         disabled={deletingId === comment.id}
                         onClick={() => handleDelete(comment.id)}
