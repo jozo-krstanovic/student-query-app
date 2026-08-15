@@ -5,6 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 
 export default function InquiryCommentsCard({
   comments,
@@ -91,14 +102,34 @@ export default function InquiryCommentsCard({
                       <Button variant="outline" size="xs" onClick={() => startEdit(comment)}>
                         Edit
                       </Button>
-                      <Button
-                        variant="destructive"
-                        size="xs"
-                        disabled={deletingId === comment.id}
-                        onClick={() => handleDelete(comment.id)}
-                      >
-                        {deletingId === comment.id ? 'Deleting...' : 'Delete'}
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="xs"
+                            disabled={deletingId === comment.id}
+                          >
+                            {deletingId === comment.id ? 'Deleting...' : 'Delete'}
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete comment?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This can't be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              variant="destructive"
+                              onClick={() => handleDelete(comment.id)}
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   )}
                 </div>
