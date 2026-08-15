@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { apiFetch } from './api'
 
 export function useInquiryQueue(endpoint) {
-  const [view, setView] = useState('list')
+  const navigate = useNavigate()
+  const { id } = useParams()
   const [inquiries, setInquiries] = useState([])
-  const [selectedId, setSelectedId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -21,15 +22,23 @@ export function useInquiryQueue(endpoint) {
     refreshList().finally(() => setLoading(false))
   }, [])
 
-  function openDetail(id) {
-    setSelectedId(id)
-    setView('detail')
+  function openDetail(inquiryId) {
+    navigate(`/${inquiryId}`)
   }
 
   function backToList() {
-    setView('list')
+    navigate('/')
     refreshList()
   }
 
-  return { view, inquiries, selectedId, loading, error, setError, openDetail, backToList }
+  return {
+    view: id ? 'detail' : 'list',
+    inquiries,
+    selectedId: id,
+    loading,
+    error,
+    setError,
+    openDetail,
+    backToList,
+  }
 }
