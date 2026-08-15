@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\ChainController;
 use App\Http\Controllers\Admin\PermissionController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Faculty\InquiryController as FacultyInquiryController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InquiryController;
@@ -36,6 +37,9 @@ Route::middleware('auth:api')->group(function () {
 
     Route::middleware('superuser')->prefix('admin')->group(function () {
         Route::get('/permissions', [PermissionController::class, 'index']);
+
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::put('/users/{user}', [AdminUserController::class, 'update']);
 
         Route::get('/roles', [RoleController::class, 'index']);
         Route::post('/roles', [RoleController::class, 'store']);
