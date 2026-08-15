@@ -3,6 +3,7 @@ import { apiFetch } from '@/lib/api'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import PageContainer from '@/components/layout/PageContainer'
 import PageHeader from '@/components/layout/PageHeader'
+import LoadingState from '@/components/layout/LoadingState'
 import FacultyInquiryList from './FacultyInquiryList'
 import FacultyInquiryDetail from './FacultyInquiryDetail'
 
@@ -37,7 +38,7 @@ export default function FacultyDashboard() {
   }
 
   if (loading) {
-    return <p className="p-8 text-sm text-muted-foreground">Loading...</p>
+    return <LoadingState />
   }
 
   return (

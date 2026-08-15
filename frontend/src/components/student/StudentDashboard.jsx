@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import PageContainer from '@/components/layout/PageContainer'
 import PageHeader from '@/components/layout/PageHeader'
+import LoadingState from '@/components/layout/LoadingState'
 import InquiryList from './InquiryList'
 import NewInquiryForm from './NewInquiryForm'
 import InquiryDetail from './InquiryDetail'
@@ -54,7 +55,7 @@ export default function StudentDashboard() {
   }
 
   if (loading) {
-    return <p className="p-8 text-sm text-muted-foreground">Loading...</p>
+    return <LoadingState />
   }
 
   return (

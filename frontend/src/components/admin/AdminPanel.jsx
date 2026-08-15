@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import PageContainer from '@/components/layout/PageContainer'
 import PageHeader from '@/components/layout/PageHeader'
+import LoadingState from '@/components/layout/LoadingState'
 import RolesTab from './RolesTab'
 import ChainsTab from './ChainsTab'
 import SubjectsTab from './SubjectsTab'
@@ -43,7 +44,7 @@ export default function AdminPanel() {
   }, [])
 
   if (loading) {
-    return <p className="p-8 text-sm text-muted-foreground">Loading admin data...</p>
+    return <LoadingState message="Loading admin data..." />
   }
 
   return (

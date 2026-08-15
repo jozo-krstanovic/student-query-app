@@ -2,16 +2,13 @@ import Auth from '@/components/Auth'
 import { useSession } from '@/lib/SessionContext'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import AppHeader from './AppHeader'
+import LoadingState from './LoadingState'
 
 export default function AuthGate({ children }) {
   const { session, profile, profileError } = useSession()
 
   if (session === undefined) {
-    return (
-      <div className="flex min-h-svh items-center justify-center">
-        <p className="text-sm text-muted-foreground">Loading...</p>
-      </div>
-    )
+    return <LoadingState className="min-h-svh" />
   }
 
   if (!session) {

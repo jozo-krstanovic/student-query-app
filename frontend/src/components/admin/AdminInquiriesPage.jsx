@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import PageContainer from '@/components/layout/PageContainer'
 import PageHeader from '@/components/layout/PageHeader'
+import LoadingState from '@/components/layout/LoadingState'
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All statuses' },
@@ -64,7 +65,7 @@ export default function AdminInquiriesPage() {
   })
 
   if (loading) {
-    return <p className="p-8 text-sm text-muted-foreground">Loading...</p>
+    return <LoadingState />
   }
 
   return (

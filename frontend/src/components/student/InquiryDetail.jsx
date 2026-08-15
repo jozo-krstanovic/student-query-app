@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
+import LoadingState from '@/components/layout/LoadingState'
 import { ArrowLeft } from 'lucide-react'
 
 const ACTION_LABELS = {
@@ -67,7 +68,7 @@ export default function InquiryDetail({ inquiryId, onBack }) {
       )}
 
       {!inquiry ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <LoadingState />
       ) : (
         <>
           <Card>

@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Separator } from '@/components/ui/separator'
+import LoadingState from '@/components/layout/LoadingState'
 import { ArrowLeft } from 'lucide-react'
 
 const ACTION_LABELS = {
@@ -90,7 +91,7 @@ export default function FacultyInquiryDetail({ inquiryId, onBack }) {
       )}
 
       {!inquiry ? (
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <LoadingState />
       ) : (
         <>
           <Card>
