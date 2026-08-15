@@ -2,31 +2,70 @@ import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import LoadingState from '@/components/layout/LoadingState'
+import NotFoundPage from '@/components/NotFoundPage'
 import InquiryStatusBadge from '@/components/inquiry/StatusBadge'
 import InquiryHistoryCard from '@/components/inquiry/HistoryCard'
 import InquiryCommentsCard from '@/components/inquiry/CommentsCard'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Pencil } from 'lucide-react'
 
 export default function InquiryDetail({ inquiryId, onBack }) {
   const [inquiry, setInquiry] = useState(null)
+  const [canEdit, setCanEdit] = useState(false)
   const [error, setError] = useState(null)
+  const [notFound, setNotFound] = useState(false)
   const [commentBody, setCommentBody] = useState('')
   const [submittingComment, setSubmittingComment] = useState(false)
+  const [editingBody, setEditingBody] = useState(false)
+  const [bodyDraft, setBodyDraft] = useState('')
+  const [savingBody, setSavingBody] = useState(false)
 
   async function refresh() {
     try {
-      const { inquiry } = await apiFetch(`/api/inquiries/${inquiryId}`)
-      setInquiry(inquiry)
+      const body = await apiFetch(`/api/inquiries/${inquiryId}`)
+      setInquiry(body.inquiry)
+      setCanEdit(body.can_edit)
     } catch (err) {
-      setError(err.message)
+      // Only the initial load (inquiry still null) counts as "not found" --
+      // a later refresh failing (e.g. after posting a comment) should show
+      // an inline error alongside the data already on screen, not blow the
+      // whole view away.
+      if (!inquiry) {
+        setNotFound(true)
+      } else {
+        setError(err.message)
+      }
     }
   }
 
   useEffect(() => {
     refresh()
   }, [inquiryId])
+
+  function startEditBody() {
+    setBodyDraft(inquiry.body)
+    setEditingBody(true)
+  }
+
+  async function saveBody() {
+    setError(null)
+    setSavingBody(true)
+    try {
+      await apiFetch(`/api/inquiries/${inquiryId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body: bodyDraft }),
+      })
+      setEditingBody(false)
+      await refresh()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setSavingBody(false)
+    }
+  }
 
   async function handleComment(e) {
     e.preventDefault()
@@ -45,6 +84,10 @@ export default function InquiryDetail({ inquiryId, onBack }) {
     } finally {
       setSubmittingComment(false)
     }
+  }
+
+  if (notFound) {
+    return <NotFoundPage />
   }
 
   return (
@@ -66,16 +109,43 @@ export default function InquiryDetail({ inquiryId, onBack }) {
         <>
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <CardTitle>{inquiry.subject.name}</CardTitle>
-                <InquiryStatusBadge inquiry={inquiry} />
+                <div className="flex items-center gap-2">
+                  <InquiryStatusBadge inquiry={inquiry} />
+                  {canEdit && !editingBody && (
+                    <Button variant="outline" size="sm" onClick={startEditBody} className="gap-1">
+                      <Pencil className="size-3.5" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
               </div>
               <CardDescription>
                 Submitted {new Date(inquiry.created_at).toLocaleString()}
+                {inquiry.body_edited_at && ' (edited)'}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="whitespace-pre-wrap text-sm">{inquiry.body}</p>
+            <CardContent className="space-y-2">
+              {editingBody ? (
+                <div className="space-y-2">
+                  <Textarea
+                    value={bodyDraft}
+                    onChange={(e) => setBodyDraft(e.target.value)}
+                    rows={5}
+                  />
+                  <div className="flex gap-2">
+                    <Button size="sm" disabled={savingBody} onClick={saveBody}>
+                      {savingBody ? 'Saving...' : 'Save'}
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingBody(false)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="whitespace-pre-wrap text-sm">{inquiry.body}</p>
+              )}
             </CardContent>
           </Card>
 
@@ -87,6 +157,7 @@ export default function InquiryDetail({ inquiryId, onBack }) {
             setCommentBody={setCommentBody}
             submitting={submittingComment}
             onSubmit={handleComment}
+            onCommentUpdated={refresh}
           />
         </>
       )}

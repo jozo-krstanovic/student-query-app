@@ -35,6 +35,30 @@ class InquiryController extends Controller
             'stepHistory.chainStep.role',
         ]);
 
+        return response()->json([
+            'status' => 'ok',
+            'inquiry' => $inquiry,
+            'can_edit' => $this->canEdit($inquiry),
+        ]);
+    }
+
+    public function update(Request $request, Inquiry $inquiry)
+    {
+        if ($inquiry->student_id !== $request->user()->id) {
+            return response()->json(['status' => 'error', 'message' => 'Forbidden.'], 403);
+        }
+
+        if (! $this->canEdit($inquiry)) {
+            return response()->json(['status' => 'error', 'message' => 'This inquiry can no longer be edited.'], 422);
+        }
+
+        $data = $request->validate(['body' => 'required|string']);
+
+        $inquiry->update([
+            'body' => $data['body'],
+            'body_edited_at' => now(),
+        ]);
+
         return response()->json(['status' => 'ok', 'inquiry' => $inquiry]);
     }
 
@@ -107,5 +131,31 @@ class InquiryController extends Controller
         $comment->load('author');
 
         return response()->json(['status' => 'ok', 'comment' => $comment], 201);
+    }
+
+    /**
+     * The body is only editable before faculty has taken any action on it --
+     * once approve/resolve/reset happens, the original wording is what that
+     * decision was made against, so it's locked to keep the audit trail
+     * meaningful. Adding more information afterward happens via comments.
+     */
+    private function canEdit(Inquiry $inquiry): bool
+    {
+        return static::bodyIsEditable($inquiry->stepHistory->pluck('action'));
+    }
+
+    /**
+     * Pure form of the same rule, kept separate from the Eloquent-querying
+     * canEdit() so it's testable without a database.
+     */
+    public static function bodyIsEditable(iterable $actions): bool
+    {
+        foreach ($actions as $action) {
+            if ($action !== 'submit') {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

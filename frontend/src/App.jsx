@@ -32,6 +32,22 @@ function App() {
             }
           />
           <Route
+            path="/new"
+            element={
+              <AuthGate>
+                <InquiriesPage />
+              </AuthGate>
+            }
+          />
+          <Route
+            path="/:id"
+            element={
+              <AuthGate>
+                <InquiriesPage />
+              </AuthGate>
+            }
+          />
+          <Route
             path="/admin"
             element={
               <AuthGate>

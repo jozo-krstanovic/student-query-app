@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import LoadingState from '@/components/layout/LoadingState'
+import NotFoundPage from '@/components/NotFoundPage'
 import InquiryStatusBadge from '@/components/inquiry/StatusBadge'
 import InquiryHistoryCard from '@/components/inquiry/HistoryCard'
 import InquiryCommentsCard from '@/components/inquiry/CommentsCard'
@@ -15,6 +16,7 @@ export default function FacultyInquiryDetail({ inquiryId, onBack }) {
   const [inquiry, setInquiry] = useState(null)
   const [can, setCan] = useState({})
   const [error, setError] = useState(null)
+  const [notFound, setNotFound] = useState(false)
   const [note, setNote] = useState('')
   const [acting, setActing] = useState(false)
   const [commentBody, setCommentBody] = useState('')
@@ -26,7 +28,15 @@ export default function FacultyInquiryDetail({ inquiryId, onBack }) {
       setInquiry(body.inquiry)
       setCan(body.can)
     } catch (err) {
-      setError(err.message)
+      // Only the initial load (inquiry still null) counts as "not found" --
+      // a later refresh failing (e.g. after an action) should show an
+      // inline error alongside the data already on screen, not blow the
+      // whole view away.
+      if (!inquiry) {
+        setNotFound(true)
+      } else {
+        setError(err.message)
+      }
     }
   }
 
@@ -69,6 +79,10 @@ export default function FacultyInquiryDetail({ inquiryId, onBack }) {
     } finally {
       setSubmittingComment(false)
     }
+  }
+
+  if (notFound) {
+    return <NotFoundPage />
   }
 
   return (
@@ -152,6 +166,7 @@ export default function FacultyInquiryDetail({ inquiryId, onBack }) {
             submitting={submittingComment}
             onSubmit={handleComment}
             canComment={can.comment}
+            onCommentUpdated={refresh}
           />
         </>
       )}

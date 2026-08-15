@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 
 function NavButton({ to, children }) {
   const { pathname } = useLocation()
-  const active = pathname === to
+  // "/" also covers /new and /:id -- the inquiries list, new-inquiry form,
+  // and a specific inquiry's detail are all part of the same section.
+  const active = to === '/' ? pathname === '/' || pathname === '/new' || /^\/\d+$/.test(pathname) : pathname === to
 
   return (
     <Button variant={active ? 'secondary' : 'ghost'} size="sm" asChild>

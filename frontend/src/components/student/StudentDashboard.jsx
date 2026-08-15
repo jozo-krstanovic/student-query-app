@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { apiFetch } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -10,10 +11,13 @@ import NewInquiryForm from './NewInquiryForm'
 import InquiryDetail from './InquiryDetail'
 
 export default function StudentDashboard() {
-  const [view, setView] = useState('list') // 'list' | 'new' | 'detail'
+  const navigate = useNavigate()
+  const { id } = useParams()
+  const { pathname } = useLocation()
+  const view = id ? 'detail' : pathname === '/new' ? 'new' : 'list'
+
   const [inquiries, setInquiries] = useState([])
   const [subjects, setSubjects] = useState([])
-  const [selectedId, setSelectedId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -44,13 +48,12 @@ export default function StudentDashboard() {
     load()
   }, [])
 
-  function openDetail(id) {
-    setSelectedId(id)
-    setView('detail')
+  function openDetail(inquiryId) {
+    navigate(`/${inquiryId}`)
   }
 
   function backToList() {
-    setView('list')
+    navigate('/')
     refreshList()
   }
 
@@ -71,7 +74,7 @@ export default function StudentDashboard() {
           <PageHeader
             title="My inquiries"
             description="Questions you've submitted and their current status."
-            action={<Button onClick={() => setView('new')}>New inquiry</Button>}
+            action={<Button onClick={() => navigate('/new')}>New inquiry</Button>}
           />
           <InquiryList inquiries={inquiries} onSelect={openDetail} />
         </>
@@ -84,11 +87,11 @@ export default function StudentDashboard() {
             setInquiries((prev) => [inquiry, ...prev])
             openDetail(inquiry.id)
           }}
-          onCancel={() => setView('list')}
+          onCancel={() => navigate('/')}
         />
       )}
 
-      {view === 'detail' && <InquiryDetail inquiryId={selectedId} onBack={backToList} />}
+      {view === 'detail' && <InquiryDetail inquiryId={id} onBack={backToList} />}
     </PageContainer>
   )
 }

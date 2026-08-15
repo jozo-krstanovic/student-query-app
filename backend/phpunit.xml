@@ -5,9 +5,9 @@
          colors="true"
 >
     <testsuites>
-        <!-- No Unit suite yet: tests/Unit is empty (and thus untracked by
-             git, so it doesn't exist on a fresh clone). Add it back once the
-             first real unit test exists. -->
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
         </testsuite>
