@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
+import { LayoutGrid, List } from 'lucide-react'
 import { apiFetch } from '@/lib/api'
 import FacultyInquiryList from '@/components/faculty/FacultyInquiryList'
 import FacultyInquiryDetail from '@/components/faculty/FacultyInquiryDetail'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import PageContainer from '@/components/layout/PageContainer'
 import PageHeader from '@/components/layout/PageHeader'
 
@@ -21,6 +23,7 @@ export default function AdminInquiriesPage() {
   const [error, setError] = useState(null)
   const [statusFilter, setStatusFilter] = useState('all')
   const [roleFilter, setRoleFilter] = useState('all')
+  const [viewMode, setViewMode] = useState('card')
 
   async function refreshList() {
     try {
@@ -79,6 +82,24 @@ export default function AdminInquiriesPage() {
             description="Every inquiry across all students and roles."
             action={
               <div className="flex gap-2">
+                <div className="flex gap-1 rounded-lg border p-0.5">
+                  <Button
+                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                    size="icon-sm"
+                    onClick={() => setViewMode('card')}
+                    aria-label="Card view"
+                  >
+                    <LayoutGrid className="size-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="icon-sm"
+                    onClick={() => setViewMode('list')}
+                    aria-label="List view"
+                  >
+                    <List className="size-4" />
+                  </Button>
+                </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
@@ -110,7 +131,7 @@ export default function AdminInquiriesPage() {
           <FacultyInquiryList
             inquiries={filteredInquiries}
             onSelect={openDetail}
-            layout="grid"
+            layout={viewMode === 'card' ? 'grid' : 'list'}
             emptyMessage="No inquiries match these filters."
           />
         </>
