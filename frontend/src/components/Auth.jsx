@@ -7,18 +7,32 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function Auth() {
-  const [mode, setMode] = useState('login') // 'login' | 'signup'
+  const [mode, setMode] = useState('login') // 'login' | 'signup' | 'forgot'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [signedUp, setSignedUp] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
 
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
     setLoading(true)
+
+    if (mode === 'forgot') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      setLoading(false)
+      if (error) {
+        setError(error.message)
+      } else {
+        setResetSent(true)
+      }
+      return
+    }
 
     const { error } =
       mode === 'login'
@@ -37,6 +51,12 @@ export default function Auth() {
     }
   }
 
+  function switchMode(newMode) {
+    setMode(newMode)
+    setError(null)
+    setResetSent(false)
+  }
+
   return (
     <div className="flex min-h-svh items-center justify-center p-6">
       <Card className="w-full max-w-sm">
@@ -44,14 +64,22 @@ export default function Auth() {
           <CardContent className="pt-6 text-sm text-muted-foreground">
             Check your email to confirm your account, then log in.
           </CardContent>
+        ) : resetSent ? (
+          <CardContent className="pt-6 text-sm text-muted-foreground">
+            Check your email for a link to reset your password.
+          </CardContent>
         ) : (
           <>
             <CardHeader>
-              <CardTitle>{mode === 'login' ? 'Log in' : 'Sign up'}</CardTitle>
+              <CardTitle>
+                {mode === 'login' ? 'Log in' : mode === 'signup' ? 'Sign up' : 'Reset password'}
+              </CardTitle>
               <CardDescription>
                 {mode === 'login'
                   ? 'Sign in to your account to continue.'
-                  : 'Create a student account to submit inquiries.'}
+                  : mode === 'signup'
+                    ? 'Create a student account to submit inquiries.'
+                    : "Enter your email and we'll send you a reset link."}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -77,35 +105,57 @@ export default function Auth() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
+                {mode !== 'forgot' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                )}
                 {error && (
                   <Alert variant="destructive">
                     <AlertDescription>{error}</AlertDescription>
                   </Alert>
                 )}
                 <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? 'Please wait...' : mode === 'login' ? 'Log in' : 'Sign up'}
+                  {loading
+                    ? 'Please wait...'
+                    : mode === 'login'
+                      ? 'Log in'
+                      : mode === 'signup'
+                        ? 'Sign up'
+                        : 'Send reset link'}
                 </Button>
               </form>
+
+              {mode === 'login' && (
+                <Button
+                  type="button"
+                  variant="link"
+                  className="mt-1 w-full"
+                  onClick={() => switchMode('forgot')}
+                >
+                  Forgot your password?
+                </Button>
+              )}
+
               <Button
                 type="button"
                 variant="link"
-                className="mt-2 w-full"
-                onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                className="mt-1 w-full"
+                onClick={() => switchMode(mode === 'signup' ? 'login' : mode === 'forgot' ? 'login' : 'signup')}
               >
-                {mode === 'login'
-                  ? "Don't have an account? Sign up"
-                  : 'Already have an account? Log in'}
+                {mode === 'signup'
+                  ? 'Already have an account? Log in'
+                  : mode === 'forgot'
+                    ? 'Back to log in'
+                    : "Don't have an account? Sign up"}
               </Button>
             </CardContent>
           </>
