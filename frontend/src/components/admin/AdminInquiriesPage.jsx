@@ -4,6 +4,8 @@ import FacultyInquiryList from '@/components/faculty/FacultyInquiryList'
 import FacultyInquiryDetail from '@/components/faculty/FacultyInquiryDetail'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import PageContainer from '@/components/layout/PageContainer'
+import PageHeader from '@/components/layout/PageHeader'
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All statuses' },
@@ -63,7 +65,7 @@ export default function AdminInquiriesPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <PageContainer size="xl">
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -72,36 +74,39 @@ export default function AdminInquiriesPage() {
 
       {view === 'list' && (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <h1 className="text-2xl font-semibold tracking-tight">Inquiries</h1>
-            <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All roles</SelectItem>
-                  {roleOptions.map((role) => (
-                    <SelectItem key={role.id} value={String(role.id)}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <PageHeader
+            title="Inquiries"
+            description="Every inquiry across all students and roles."
+            action={
+              <div className="flex gap-2">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="All roles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All roles</SelectItem>
+                    {roleOptions.map((role) => (
+                      <SelectItem key={role.id} value={String(role.id)}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            }
+          />
           <FacultyInquiryList
             inquiries={filteredInquiries}
             onSelect={openDetail}
@@ -112,6 +117,6 @@ export default function AdminInquiriesPage() {
       )}
 
       {view === 'detail' && <FacultyInquiryDetail inquiryId={selectedId} onBack={backToList} />}
-    </div>
+    </PageContainer>
   )
 }

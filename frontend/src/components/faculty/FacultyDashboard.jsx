@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import PageContainer from '@/components/layout/PageContainer'
+import PageHeader from '@/components/layout/PageHeader'
 import FacultyInquiryList from './FacultyInquiryList'
 import FacultyInquiryDetail from './FacultyInquiryDetail'
 
@@ -39,7 +41,7 @@ export default function FacultyDashboard() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
+    <PageContainer>
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -48,12 +50,12 @@ export default function FacultyDashboard() {
 
       {view === 'list' && (
         <>
-          <h1 className="text-2xl font-semibold tracking-tight">Assigned to me</h1>
+          <PageHeader title="Assigned to me" description="Inquiries currently waiting on your review." />
           <FacultyInquiryList inquiries={inquiries} onSelect={openDetail} />
         </>
       )}
 
       {view === 'detail' && <FacultyInquiryDetail inquiryId={selectedId} onBack={backToList} />}
-    </div>
+    </PageContainer>
   )
 }
