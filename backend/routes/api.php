@@ -21,6 +21,7 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/subjects', [SubjectController::class, 'index']);
 
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 
     Route::middleware('student')->group(function () {
         Route::get('/inquiries', [InquiryController::class, 'index']);

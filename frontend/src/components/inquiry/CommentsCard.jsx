@@ -20,6 +20,8 @@ export default function InquiryCommentsCard({
   const [editBody, setEditBody] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
   const [editError, setEditError] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
+  const [deleteError, setDeleteError] = useState(null)
 
   function startEdit(comment) {
     setEditingId(comment.id)
@@ -51,6 +53,19 @@ export default function InquiryCommentsCard({
     }
   }
 
+  async function handleDelete(commentId) {
+    setDeletingId(commentId)
+    setDeleteError(null)
+    try {
+      await apiFetch(`/api/comments/${commentId}`, { method: 'DELETE' })
+      await onCommentUpdated?.()
+    } catch (err) {
+      setDeleteError(err.message)
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -72,9 +87,19 @@ export default function InquiryCommentsCard({
                     </span>
                   </div>
                   {comment.author_id === profile.id && editingId !== comment.id && (
-                    <Button variant="ghost" size="xs" onClick={() => startEdit(comment)}>
-                      Edit
-                    </Button>
+                    <div className="flex shrink-0 gap-1">
+                      <Button variant="ghost" size="xs" onClick={() => startEdit(comment)}>
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        disabled={deletingId === comment.id}
+                        onClick={() => handleDelete(comment.id)}
+                      >
+                        {deletingId === comment.id ? 'Deleting...' : 'Delete'}
+                      </Button>
+                    </div>
                   )}
                 </div>
                 {editingId === comment.id ? (
@@ -101,6 +126,8 @@ export default function InquiryCommentsCard({
             ))}
           </div>
         )}
+
+        {deleteError && <p className="text-xs text-destructive">{deleteError}</p>}
 
         {canComment && (
           <>

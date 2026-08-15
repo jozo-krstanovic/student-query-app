@@ -28,6 +28,17 @@ class CommentController extends Controller
         return response()->json(['status' => 'ok', 'comment' => $comment]);
     }
 
+    public function destroy(Request $request, InquiryComment $comment)
+    {
+        if (! static::isAuthor($comment->author_id, $request->user()->id)) {
+            return response()->json(['status' => 'error', 'message' => 'Forbidden.'], 403);
+        }
+
+        $comment->delete();
+
+        return response()->json(['status' => 'ok']);
+    }
+
     /**
      * Pure form of the authorship check, kept separate so it's testable
      * without a database.
