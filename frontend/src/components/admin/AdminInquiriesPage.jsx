@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
-import { apiFetch } from '@/lib/api'
+import { useMemo, useState } from 'react'
+import { LayoutGrid, List } from 'lucide-react'
+import { useInquiryQueue } from '@/lib/useInquiryQueue'
 import FacultyInquiryList from '@/components/faculty/FacultyInquiryList'
 import FacultyInquiryDetail from '@/components/faculty/FacultyInquiryDetail'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import PageContainer from '@/components/layout/PageContainer'
+import PageHeader from '@/components/layout/PageHeader'
+import LoadingState from '@/components/layout/LoadingState'
 
 const STATUS_OPTIONS = [
   { value: 'all', label: 'All statuses' },
@@ -12,36 +17,11 @@ const STATUS_OPTIONS = [
 ]
 
 export default function AdminInquiriesPage() {
-  const [view, setView] = useState('list')
-  const [inquiries, setInquiries] = useState([])
-  const [selectedId, setSelectedId] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { view, inquiries, selectedId, loading, error, openDetail, backToList } =
+    useInquiryQueue('/api/faculty/inquiries')
   const [statusFilter, setStatusFilter] = useState('all')
   const [roleFilter, setRoleFilter] = useState('all')
-
-  async function refreshList() {
-    try {
-      const { inquiries } = await apiFetch('/api/faculty/inquiries')
-      setInquiries(inquiries)
-    } catch (err) {
-      setError(err.message)
-    }
-  }
-
-  useEffect(() => {
-    refreshList().finally(() => setLoading(false))
-  }, [])
-
-  function openDetail(id) {
-    setSelectedId(id)
-    setView('detail')
-  }
-
-  function backToList() {
-    setView('list')
-    refreshList()
-  }
+  const [viewMode, setViewMode] = useState('card')
 
   const roleOptions = useMemo(() => {
     const roles = new Map()
@@ -59,11 +39,11 @@ export default function AdminInquiriesPage() {
   })
 
   if (loading) {
-    return <p className="p-8 text-sm text-muted-foreground">Loading...</p>
+    return <LoadingState />
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
+    <PageContainer size="xl">
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -72,46 +52,67 @@ export default function AdminInquiriesPage() {
 
       {view === 'list' && (
         <>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <h1 className="text-2xl font-semibold tracking-tight">Inquiries</h1>
-            <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {STATUS_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder="All roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All roles</SelectItem>
-                  {roleOptions.map((role) => (
-                    <SelectItem key={role.id} value={String(role.id)}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <PageHeader
+            title="Inquiries"
+            description="Every inquiry across all students and roles."
+            action={
+              <div className="flex gap-2">
+                <div className="flex gap-1 rounded-lg border p-0.5">
+                  <Button
+                    variant={viewMode === 'card' ? 'secondary' : 'ghost'}
+                    size="icon-sm"
+                    onClick={() => setViewMode('card')}
+                    aria-label="Card view"
+                  >
+                    <LayoutGrid className="size-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                    size="icon-sm"
+                    onClick={() => setViewMode('list')}
+                    aria-label="List view"
+                  >
+                    <List className="size-4" />
+                  </Button>
+                </div>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_OPTIONS.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={roleFilter} onValueChange={setRoleFilter}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue placeholder="All roles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All roles</SelectItem>
+                    {roleOptions.map((role) => (
+                      <SelectItem key={role.id} value={String(role.id)}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            }
+          />
           <FacultyInquiryList
             inquiries={filteredInquiries}
             onSelect={openDetail}
-            layout="grid"
+            layout={viewMode === 'card' ? 'grid' : 'list'}
             emptyMessage="No inquiries match these filters."
           />
         </>
       )}
 
       {view === 'detail' && <FacultyInquiryDetail inquiryId={selectedId} onBack={backToList} />}
-    </div>
+    </PageContainer>
   )
 }

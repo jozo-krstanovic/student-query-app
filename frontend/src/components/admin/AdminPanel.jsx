@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import PageContainer from '@/components/layout/PageContainer'
+import PageHeader from '@/components/layout/PageHeader'
+import LoadingState from '@/components/layout/LoadingState'
 import RolesTab from './RolesTab'
 import ChainsTab from './ChainsTab'
 import SubjectsTab from './SubjectsTab'
@@ -41,17 +44,15 @@ export default function AdminPanel() {
   }, [])
 
   if (loading) {
-    return <p className="p-8 text-sm text-muted-foreground">Loading admin data...</p>
+    return <LoadingState message="Loading admin data..." />
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 p-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Admin</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage roles, permissions, approval chains, subjects, and users.
-        </p>
-      </div>
+    <PageContainer size="xl">
+      <PageHeader
+        title="Admin"
+        description="Manage roles, permissions, approval chains, subjects, and users."
+      />
 
       {error && (
         <Alert variant="destructive">
@@ -79,6 +80,6 @@ export default function AdminPanel() {
           <UsersTab users={users} setUsers={setUsers} roles={roles} setError={setError} />
         </TabsContent>
       </Tabs>
-    </div>
+    </PageContainer>
   )
 }

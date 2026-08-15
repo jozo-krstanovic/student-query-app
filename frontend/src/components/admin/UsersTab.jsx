@@ -70,75 +70,79 @@ export default function UsersTab({ users, setUsers, roles, setError }) {
         <CardDescription>Change a user's type and, for faculty, their role.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => {
-              const draft = getDraft(user)
-              const canSave =
-                isDirty(user) && !(draft.user_type === 'faculty' && !draft.role_id)
+        {users.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No users yet.</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => {
+                const draft = getDraft(user)
+                const canSave =
+                  isDirty(user) && !(draft.user_type === 'faculty' && !draft.role_id)
 
-              return (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.full_name}</TableCell>
-                  <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                  <TableCell>
-                    <Select value={draft.user_type} onValueChange={(v) => handleTypeChange(user, v)}>
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {USER_TYPES.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </TableCell>
-                  <TableCell>
-                    {draft.user_type === 'faculty' ? (
-                      <Select
-                        value={draft.role_id ? String(draft.role_id) : ''}
-                        onValueChange={(v) => handleRoleChange(user, Number(v))}
-                      >
-                        <SelectTrigger className="w-40">
-                          <SelectValue placeholder="Select role..." />
+                return (
+                  <TableRow key={user.id}>
+                    <TableCell className="font-medium">{user.full_name}</TableCell>
+                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                    <TableCell>
+                      <Select value={draft.user_type} onValueChange={(v) => handleTypeChange(user, v)}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          {roles.map((role) => (
-                            <SelectItem key={role.id} value={String(role.id)}>
-                              {role.name}
+                          {USER_TYPES.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      size="sm"
-                      disabled={!canSave || savingId === user.id}
-                      onClick={() => handleSave(user)}
-                    >
-                      {savingId === user.id ? 'Saving...' : 'Save'}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
+                    </TableCell>
+                    <TableCell>
+                      {draft.user_type === 'faculty' ? (
+                        <Select
+                          value={draft.role_id ? String(draft.role_id) : ''}
+                          onValueChange={(v) => handleRoleChange(user, Number(v))}
+                        >
+                          <SelectTrigger className="w-40">
+                            <SelectValue placeholder="Select role..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {roles.map((role) => (
+                              <SelectItem key={role.id} value={String(role.id)}>
+                                {role.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        disabled={!canSave || savingId === user.id}
+                        onClick={() => handleSave(user)}
+                      >
+                        {savingId === user.id ? 'Saving...' : 'Save'}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   )

@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import PageContainer from '@/components/layout/PageContainer'
 import { ArrowLeft } from 'lucide-react'
 
 const USER_TYPE_LABELS = {
@@ -47,7 +48,7 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md space-y-4 p-6">
+    <PageContainer size="md">
       <Button variant="ghost" size="sm" asChild className="gap-1">
         <Link to="/">
           <ArrowLeft className="size-4" />
@@ -119,6 +120,6 @@ export default function AccountPage() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   )
 }

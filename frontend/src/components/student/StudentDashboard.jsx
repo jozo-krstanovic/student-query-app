@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import PageContainer from '@/components/layout/PageContainer'
+import PageHeader from '@/components/layout/PageHeader'
+import LoadingState from '@/components/layout/LoadingState'
 import InquiryList from './InquiryList'
 import NewInquiryForm from './NewInquiryForm'
 import InquiryDetail from './InquiryDetail'
@@ -52,11 +55,11 @@ export default function StudentDashboard() {
   }
 
   if (loading) {
-    return <p className="p-8 text-sm text-muted-foreground">Loading...</p>
+    return <LoadingState />
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 p-6">
+    <PageContainer>
       {error && (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -65,10 +68,11 @@ export default function StudentDashboard() {
 
       {view === 'list' && (
         <>
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight">My inquiries</h1>
-            <Button onClick={() => setView('new')}>New inquiry</Button>
-          </div>
+          <PageHeader
+            title="My inquiries"
+            description="Questions you've submitted and their current status."
+            action={<Button onClick={() => setView('new')}>New inquiry</Button>}
+          />
           <InquiryList inquiries={inquiries} onSelect={openDetail} />
         </>
       )}
@@ -85,6 +89,6 @@ export default function StudentDashboard() {
       )}
 
       {view === 'detail' && <InquiryDetail inquiryId={selectedId} onBack={backToList} />}
-    </div>
+    </PageContainer>
   )
 }
