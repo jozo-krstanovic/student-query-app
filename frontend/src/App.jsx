@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { supabase } from './lib/supabaseClient'
-import { apiFetch } from './lib/api'
-import Auth from './components/Auth'
-import AdminPanel from './components/AdminPanel'
-import './App.css'
+import { supabase } from '@/lib/supabaseClient'
+import { apiFetch } from '@/lib/api'
+import Auth from '@/components/Auth'
+import AdminPanel from '@/components/admin/AdminPanel'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 function App() {
   const [session, setSession] = useState(undefined) // undefined = loading, null = logged out
@@ -34,25 +36,53 @@ function App() {
   }, [session])
 
   if (session === undefined) {
-    return <p>Loading...</p>
+    return (
+      <div className="flex min-h-svh items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    )
   }
 
   if (!session) {
     return <Auth />
   }
 
-  return (
-    <div className="dashboard">
-      <h1>Signed in as {session.user.email}</h1>
-      {profileError && <p className="error">Backend error: {profileError}</p>}
-      <button type="button" onClick={() => supabase.auth.signOut()}>
-        Log out
-      </button>
-      {profile?.user_type === 'superuser' ? (
+  if (profile?.user_type === 'superuser') {
+    return (
+      <div className="min-h-svh">
+        <header className="flex items-center justify-between border-b px-6 py-3">
+          <span className="text-sm text-muted-foreground">Signed in as {session.user.email}</span>
+          <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>
+            Log out
+          </Button>
+        </header>
         <AdminPanel />
-      ) : (
-        profile && <pre>{JSON.stringify(profile, null, 2)}</pre>
-      )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex min-h-svh items-center justify-center p-6">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle>Signed in as {session.user.email}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {profileError && (
+            <Alert variant="destructive">
+              <AlertDescription>Backend error: {profileError}</AlertDescription>
+            </Alert>
+          )}
+          {profile && (
+            <pre className="overflow-x-auto rounded-lg bg-muted p-4 text-xs">
+              {JSON.stringify(profile, null, 2)}
+            </pre>
+          )}
+          <Button variant="outline" className="w-full" onClick={() => supabase.auth.signOut()}>
+            Log out
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }
