@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SubjectController as AdminSubjectController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\Faculty\InquiryController as FacultyInquiryController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InquiryController;
@@ -23,12 +24,16 @@ Route::middleware('auth:api')->group(function () {
     Route::put('/comments/{comment}', [CommentController::class, 'update']);
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
 
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download']);
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
+
     Route::middleware('student')->group(function () {
         Route::get('/inquiries', [InquiryController::class, 'index']);
         Route::post('/inquiries', [InquiryController::class, 'store']);
         Route::get('/inquiries/{inquiry}', [InquiryController::class, 'show']);
         Route::put('/inquiries/{inquiry}', [InquiryController::class, 'update']);
         Route::post('/inquiries/{inquiry}/comments', [InquiryController::class, 'comment']);
+        Route::post('/inquiries/{inquiry}/documents', [InquiryController::class, 'uploadDocument']);
     });
 
     Route::prefix('faculty')->group(function () {
@@ -38,6 +43,7 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/inquiries/{inquiry}/resolve', [FacultyInquiryController::class, 'resolve']);
         Route::post('/inquiries/{inquiry}/reset', [FacultyInquiryController::class, 'reset']);
         Route::post('/inquiries/{inquiry}/comments', [FacultyInquiryController::class, 'comment']);
+        Route::post('/inquiries/{inquiry}/documents', [FacultyInquiryController::class, 'uploadDocument']);
     });
 
     Route::middleware('superuser')->prefix('admin')->group(function () {

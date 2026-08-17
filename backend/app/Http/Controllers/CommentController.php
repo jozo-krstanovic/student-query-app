@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InquiryComment;
+use App\Services\SupabaseStorage;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
@@ -28,10 +29,18 @@ class CommentController extends Controller
         return response()->json(['status' => 'ok', 'comment' => $comment]);
     }
 
-    public function destroy(Request $request, InquiryComment $comment)
+    public function destroy(Request $request, InquiryComment $comment, SupabaseStorage $storage)
     {
         if (! static::isAuthor($comment->author_id, $request->user()->id)) {
             return response()->json(['status' => 'error', 'message' => 'Forbidden.'], 403);
+        }
+
+        // The DB row cascades away with the comment (ON DELETE CASCADE on
+        // inquiry_documents.comment_id), but that's a raw FK cascade -- it
+        // never calls back into app code, so the actual Storage object has
+        // to be deleted here or it's orphaned in the bucket forever.
+        foreach ($comment->documents as $document) {
+            $storage->delete($document->storage_path);
         }
 
         $comment->delete();

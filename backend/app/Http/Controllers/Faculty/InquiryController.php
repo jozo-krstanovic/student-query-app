@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Faculty;
 use App\Http\Controllers\Controller;
 use App\Models\ChainStep;
 use App\Models\Inquiry;
+use App\Models\InquiryComment;
 use App\Models\InquiryStepHistory;
 use App\Models\User;
+use App\Services\SupabaseStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class InquiryController extends Controller
 {
@@ -42,6 +45,7 @@ class InquiryController extends Controller
             'chain',
             'currentStep.role',
             'comments.author',
+            'documents.uploader',
             'stepHistory.actor',
             'stepHistory.chainStep.role',
         ]);
@@ -176,6 +180,44 @@ class InquiryController extends Controller
         $comment->load('author');
 
         return response()->json(['status' => 'ok', 'comment' => $comment], 201);
+    }
+
+    public function uploadDocument(Request $request, Inquiry $inquiry, SupabaseStorage $storage)
+    {
+        if (! $this->hasVisibility($inquiry, $request->user()) || ! $this->hasPermission($request->user(), 'inquiry.comment')) {
+            return response()->json(['status' => 'error', 'message' => 'Forbidden.'], 403);
+        }
+
+        $data = $request->validate([
+            'file' => 'required|file|max:10240|mimes:pdf,doc,docx,xls,xlsx,txt,jpg,jpeg,png,gif,webp',
+            'comment_id' => 'nullable|integer|exists:inquiry_comments,id',
+        ]);
+
+        if (isset($data['comment_id'])) {
+            $comment = InquiryComment::find($data['comment_id']);
+
+            if ($comment->inquiry_id !== $inquiry->id || $comment->author_id !== $request->user()->id) {
+                return response()->json(['status' => 'error', 'message' => 'You can only attach documents to your own comment.'], 422);
+            }
+        }
+
+        $file = $data['file'];
+        $storagePath = "inquiries/{$inquiry->id}/".Str::uuid().'.'.$file->getClientOriginalExtension();
+
+        $storage->upload($storagePath, $file->get(), $file->getMimeType());
+
+        $document = $inquiry->documents()->create([
+            'comment_id' => $data['comment_id'] ?? null,
+            'uploaded_by' => $request->user()->id,
+            'storage_path' => $storagePath,
+            'file_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'file_size' => $file->getSize(),
+        ]);
+
+        $document->load('uploader');
+
+        return response()->json(['status' => 'ok', 'document' => $document], 201);
     }
 
     /**
