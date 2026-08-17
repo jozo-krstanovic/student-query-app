@@ -59,7 +59,10 @@ export default function InquiryDocumentsCard({ documents, onChanged }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {documents.map((document) => (
-          <div key={document.id} className="flex items-center justify-between gap-2 text-sm">
+          <div
+            key={document.id}
+            className="flex items-center justify-between gap-2 rounded-lg border bg-muted/40 p-3 text-sm"
+          >
             <div>
               <button
                 type="button"
