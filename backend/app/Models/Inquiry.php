@@ -51,6 +51,11 @@ class Inquiry extends Model
         return $this->hasMany(InquiryComment::class)->orderBy('created_at');
     }
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(InquiryDocument::class)->orderBy('created_at');
+    }
+
     public function stepHistory(): HasMany
     {
         return $this->hasMany(InquiryStepHistory::class)->orderBy('created_at');

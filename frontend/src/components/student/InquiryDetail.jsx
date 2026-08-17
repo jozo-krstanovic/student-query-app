@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api'
+import { uploadDocuments } from '@/lib/documents'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -9,6 +10,7 @@ import NotFoundPage from '@/components/NotFoundPage'
 import InquiryStatusBadge from '@/components/inquiry/StatusBadge'
 import InquiryHistoryCard from '@/components/inquiry/HistoryCard'
 import InquiryCommentsCard from '@/components/inquiry/CommentsCard'
+import InquiryDocumentsCard from '@/components/inquiry/DocumentsCard'
 import { ArrowLeft, Pencil } from 'lucide-react'
 
 export default function InquiryDetail({ inquiryId, onBack }) {
@@ -67,16 +69,21 @@ export default function InquiryDetail({ inquiryId, onBack }) {
     }
   }
 
-  async function handleComment(e) {
+  async function handleComment(e, files = []) {
     e.preventDefault()
     setError(null)
     setSubmittingComment(true)
     try {
-      await apiFetch(`/api/inquiries/${inquiryId}/comments`, {
+      const { comment } = await apiFetch(`/api/inquiries/${inquiryId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ body: commentBody }),
       })
+
+      if (files.length > 0) {
+        await uploadDocuments(`/api/inquiries/${inquiryId}/documents`, files, { comment_id: comment.id })
+      }
+
       setCommentBody('')
       await refresh()
     } catch (err) {
@@ -159,6 +166,8 @@ export default function InquiryDetail({ inquiryId, onBack }) {
             onSubmit={handleComment}
             onCommentUpdated={refresh}
           />
+
+          <InquiryDocumentsCard documents={inquiry.documents} onChanged={refresh} />
         </>
       )}
     </div>

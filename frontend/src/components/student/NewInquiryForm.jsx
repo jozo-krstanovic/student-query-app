@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { apiFetch } from '@/lib/api'
+import { uploadDocuments } from '@/lib/documents'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -10,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 export default function NewInquiryForm({ subjects, onCreated, onCancel }) {
   const [subjectId, setSubjectId] = useState('')
   const [body, setBody] = useState('')
+  const [files, setFiles] = useState([])
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -23,6 +26,11 @@ export default function NewInquiryForm({ subjects, onCreated, onCancel }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ subject_id: subjectId, body }),
       })
+
+      if (files.length > 0) {
+        await uploadDocuments(`/api/inquiries/${inquiry.id}/documents`, files)
+      }
+
       onCreated(inquiry)
     } catch (err) {
       setError(err.message)
@@ -61,6 +69,16 @@ export default function NewInquiryForm({ subjects, onCreated, onCancel }) {
               onChange={(e) => setBody(e.target.value)}
               rows={6}
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="inquiry-files">Attachments (optional)</Label>
+            <Input
+              id="inquiry-files"
+              type="file"
+              multiple
+              onChange={(e) => setFiles(Array.from(e.target.files))}
+              className="file:mr-2 file:h-6 file:rounded-md file:border file:border-input file:bg-background file:px-2.5 hover:file:bg-muted"
             />
           </div>
           {error && (

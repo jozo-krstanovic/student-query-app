@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSession } from '@/lib/SessionContext'
 import { apiFetch } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -27,6 +28,7 @@ export default function InquiryCommentsCard({
   onCommentUpdated,
 }) {
   const { profile } = useSession()
+  const fileInputRef = useRef(null)
   const [editingId, setEditingId] = useState(null)
   const [editBody, setEditBody] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
@@ -163,13 +165,26 @@ export default function InquiryCommentsCard({
         {canComment && (
           <>
             <Separator />
-            <form onSubmit={onSubmit} className="space-y-2">
+            <form
+              onSubmit={(e) => {
+                const files = Array.from(fileInputRef.current?.files || [])
+                onSubmit(e, files)
+                fileInputRef.current.value = ''
+              }}
+              className="space-y-2"
+            >
               <Textarea
                 value={commentBody}
                 onChange={(e) => setCommentBody(e.target.value)}
                 placeholder="Add a comment..."
                 rows={3}
                 required
+              />
+              <Input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="file:mr-2 file:h-6 file:rounded-md file:border file:border-input file:bg-background file:px-2.5 hover:file:bg-muted"
               />
               <Button type="submit" size="sm" disabled={submitting}>
                 {submitting ? 'Posting...' : 'Post comment'}
