@@ -19,8 +19,9 @@ export function useInquiryQueue(endpoint) {
   }
 
   useEffect(() => {
+    setLoading(true)
     refreshList().finally(() => setLoading(false))
-  }, [])
+  }, [endpoint])
 
   function openDetail(inquiryId) {
     navigate(`/${inquiryId}`)

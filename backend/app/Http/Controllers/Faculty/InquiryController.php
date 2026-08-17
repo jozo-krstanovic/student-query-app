@@ -21,11 +21,24 @@ class InquiryController extends Controller
 
         $query = Inquiry::with(['student', 'subject', 'currentStep.role']);
 
-        // Superuser gets full oversight (every inquiry, any status); faculty
-        // gets their own actionable queue (only what's currently at their step).
+        // Superuser gets full oversight (every inquiry, any status). Faculty
+        // only ever see inquiries whose chain includes their role at all --
+        // otherwise sliced into three queues, since "assigned" alone used to
+        // mean an inquiry vanished from faculty view the moment they acted on
+        // it, with no way back to something they were previously involved in.
         if ($user->user_type !== 'superuser') {
-            $query->where('status', 'in_progress')
-                ->whereHas('currentStep', fn ($q) => $q->where('role_id', $user->role_id));
+            $data = $request->validate(['queue' => 'nullable|in:assigned,watching,completed']);
+            $queue = $data['queue'] ?? 'assigned';
+
+            $query->whereHas('chain.steps', fn ($q) => $q->where('role_id', $user->role_id));
+
+            match ($queue) {
+                'completed' => $query->where('status', 'completed'),
+                'watching' => $query->where('status', 'in_progress')
+                    ->whereHas('currentStep', fn ($q) => $q->where('role_id', '!=', $user->role_id)),
+                default => $query->where('status', 'in_progress')
+                    ->whereHas('currentStep', fn ($q) => $q->where('role_id', $user->role_id)),
+            };
         }
 
         $inquiries = $query->orderBy('created_at')->get();
@@ -221,8 +234,10 @@ class InquiryController extends Controller
     }
 
     /**
-     * Visible if this role is currently assigned, or was ever assigned in
-     * this inquiry's history (past or current step) -- not just anyone.
+     * Visible if this role appears anywhere in the inquiry's chain -- current
+     * step, a past step, or a step not reached yet -- matching the "assigned
+     * / watching / completed" queues in index(). Being in the chain at all is
+     * what matters, not whether this role has acted (or ever will act) yet.
      * Superuser has unrestricted oversight of every inquiry.
      */
     private function hasVisibility(Inquiry $inquiry, User $user): bool
@@ -235,13 +250,7 @@ class InquiryController extends Controller
             return false;
         }
 
-        if ($inquiry->currentStep && $inquiry->currentStep->role_id === $user->role_id) {
-            return true;
-        }
-
-        return $inquiry->stepHistory()
-            ->whereHas('chainStep', fn ($q) => $q->where('role_id', $user->role_id))
-            ->exists();
+        return $inquiry->chain->steps()->where('role_id', $user->role_id)->exists();
     }
 
     /**
