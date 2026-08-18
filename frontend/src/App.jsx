@@ -27,46 +27,17 @@ function App() {
         <NotificationsProvider>
           <Routes>
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route
-              path="/"
-              element={
-                <AuthGate>
-                  <InquiriesPage />
-                </AuthGate>
-              }
-            />
-            <Route
-              path="/new"
-              element={
-                <AuthGate>
-                  <InquiriesPage />
-                </AuthGate>
-              }
-            />
-            <Route
-              path="/:id"
-              element={
-                <AuthGate>
-                  <InquiriesPage />
-                </AuthGate>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <AuthGate>
-                  <AdminRoute />
-                </AuthGate>
-              }
-            />
-            <Route
-              path="/account"
-              element={
-                <AuthGate>
-                  <AccountPage />
-                </AuthGate>
-              }
-            />
+            {/* Pathless layout route: AuthGate has no URL segment of its own, it
+                just wraps every authenticated page in one persistent instance
+                (header, session gate) via <Outlet/>, instead of being repeated
+                per-route and remounting on every navigation between them. */}
+            <Route element={<AuthGate />}>
+              <Route index element={<InquiriesPage />} />
+              <Route path="new" element={<InquiriesPage />} />
+              <Route path=":id" element={<InquiriesPage />} />
+              <Route path="admin" element={<AdminRoute />} />
+              <Route path="account" element={<AccountPage />} />
+            </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </NotificationsProvider>

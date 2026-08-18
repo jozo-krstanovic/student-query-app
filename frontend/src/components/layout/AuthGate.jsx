@@ -1,10 +1,11 @@
+import { Outlet } from 'react-router-dom'
 import Auth from '@/components/Auth'
 import { useSession } from '@/lib/SessionContext'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import AppHeader from './AppHeader'
 import LoadingState from './LoadingState'
 
-export default function AuthGate({ children }) {
+export default function AuthGate() {
   const { session, profile, profileError } = useSession()
 
   if (session === undefined) {
@@ -26,7 +27,7 @@ export default function AuthGate({ children }) {
           </Alert>
         </div>
       ) : (
-        profile && children
+        profile && <Outlet />
       )}
     </div>
   )
