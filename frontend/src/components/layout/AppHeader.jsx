@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Bell, GraduationCap } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { useSession } from '@/lib/SessionContext'
-import { useNotifications } from '@/lib/useNotifications'
+import { useNotifications } from '@/lib/NotificationsContext'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
@@ -109,10 +109,10 @@ export default function AppHeader() {
         </nav>
       </div>
       <div className="flex items-center gap-2">
-        <NotificationBell />
         <span className="text-sm text-muted-foreground">
           Signed in as {profile?.full_name ?? session.user.email}
         </span>
+        <NotificationBell />
         <Button variant="outline" size="sm" asChild>
           <Link to="/account">Account</Link>
         </Button>

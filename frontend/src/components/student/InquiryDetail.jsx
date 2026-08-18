@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { apiFetch } from '@/lib/api'
 import { uploadDocuments } from '@/lib/documents'
+import { useNotifications } from '@/lib/NotificationsContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,6 +15,7 @@ import InquiryDocumentsCard from '@/components/inquiry/DocumentsCard'
 import { ArrowLeft, Pencil } from 'lucide-react'
 
 export default function InquiryDetail({ inquiryId, onBack }) {
+  const { lastEvent } = useNotifications()
   const [inquiry, setInquiry] = useState(null)
   const [canEdit, setCanEdit] = useState(false)
   const [error, setError] = useState(null)
@@ -45,6 +47,15 @@ export default function InquiryDetail({ inquiryId, onBack }) {
   useEffect(() => {
     refresh()
   }, [inquiryId])
+
+  // A live notification for this same inquiry (e.g. faculty commented or
+  // resolved it) while it's already open -- refresh in place, since
+  // navigating to a URL you're already on doesn't remount/refetch anything.
+  useEffect(() => {
+    if (lastEvent && String(lastEvent.inquiry_id) === String(inquiryId)) {
+      refresh()
+    }
+  }, [lastEvent])
 
   function startEditBody() {
     setBodyDraft(inquiry.body)
