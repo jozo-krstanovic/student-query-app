@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
@@ -33,7 +34,26 @@ class RoleController extends Controller
             'is_active' => 'sometimes|boolean',
         ]);
 
+        $isActive = $data['is_active'] ?? null;
+        unset($data['is_active']);
+
         $role->update($data);
+
+        // Can't fold this into the update() above: a bound PHP boolean hits
+        // the same boolean/integer binding mismatch as SubjectController's
+        // is_active query, but wrapping it in DB::raw() to work around that
+        // breaks *differently* on a single already-loaded instance --
+        // Model::update() casts old and new values through the boolean cast
+        // before deciding if anything changed, and any object (including a
+        // raw SQL expression) casts truthy in PHP, so "already true" looks
+        // unchanged even when actually flipping to false, and the write is
+        // silently dropped. Role::whereKey()->update() is a query-builder
+        // mass update with no such per-instance dirty-tracking to fool.
+        if ($isActive !== null) {
+            Role::whereKey($role->id)->update(['is_active' => DB::raw($isActive ? 'true' : 'false')]);
+        }
+
+        $role->refresh();
 
         return response()->json(['status' => 'ok', 'role' => $role->load('permissions')]);
     }

@@ -21,13 +21,16 @@ class NotificationController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Forbidden.'], 403);
         }
 
-        // A bound PHP `true` hits the same boolean/integer binding mismatch
-        // as SubjectController's is_active query (see NotificationService) --
-        // DB::raw() inlines the literal instead of binding it as a parameter.
-        // Re-set the attribute afterward so the in-memory model (returned
-        // below) holds a real boolean rather than the raw SQL expression.
-        $notification->update(['is_read' => DB::raw('true')]);
-        $notification->is_read = true;
+        // Not $notification->update(...): Model::update() on an already-
+        // loaded instance runs Eloquent's dirty-check first, which casts
+        // old and new values through the boolean cast before comparing --
+        // and any object (including a DB::raw() expression, needed here for
+        // the same boolean/integer binding mismatch as SubjectController's
+        // is_active query) casts truthy in PHP, so it can look "unchanged"
+        // and get silently dropped. A query-builder mass update has no such
+        // per-instance dirty-tracking to fool.
+        Notification::whereKey($notification->id)->update(['is_read' => DB::raw('true')]);
+        $notification->refresh();
 
         return response()->json(['status' => 'ok', 'notification' => $notification]);
     }
