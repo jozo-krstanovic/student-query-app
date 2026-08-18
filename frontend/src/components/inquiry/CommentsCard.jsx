@@ -90,7 +90,7 @@ export default function InquiryCommentsCard({
         ) : (
           <div className="space-y-3">
             {comments.map((comment) => (
-              <div key={comment.id} className="text-sm">
+              <div key={comment.id} className="rounded-lg border bg-muted/40 p-3 text-sm">
                 <div className="flex items-center justify-between gap-2">
                   <div className="font-medium">
                     {comment.author.full_name}
@@ -153,7 +153,7 @@ export default function InquiryCommentsCard({
                     </div>
                   </div>
                 ) : (
-                  <p className="whitespace-pre-wrap">{comment.body}</p>
+                  <p className="mt-1 whitespace-pre-wrap">{comment.body}</p>
                 )}
               </div>
             ))}
