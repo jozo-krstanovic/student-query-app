@@ -52,7 +52,7 @@ export default function RolesTab({ roles, setRoles, permissions, setError }) {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <Card>
         <CardHeader>
           <CardTitle>Roles</CardTitle>

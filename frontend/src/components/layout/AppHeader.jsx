@@ -21,10 +21,12 @@ export default function AppHeader() {
   const { session, profile } = useSession()
 
   return (
-    <header className="flex items-center justify-between border-b px-6 py-3">
-      <div className="flex items-center gap-6">
-        <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <GraduationCap className="size-5" />
+    <header className="flex items-center justify-between border-b bg-sidebar px-6 py-4 text-sidebar-foreground shadow-sm">
+      <div className="flex items-center gap-8">
+        <Link to="/" className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <GraduationCap className="size-5" />
+          </span>
           Student Query
         </Link>
         <nav className="flex items-center gap-1">
@@ -39,8 +41,10 @@ export default function AppHeader() {
         </nav>
       </div>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Signed in as {session.user.email}</span>
-        <Button variant="ghost" size="sm" asChild>
+        <span className="text-sm text-muted-foreground">
+          Signed in as {profile?.full_name ?? session.user.email}
+        </span>
+        <Button variant="outline" size="sm" asChild>
           <Link to="/account">Account</Link>
         </Button>
         <Button variant="outline" size="sm" onClick={() => supabase.auth.signOut()}>

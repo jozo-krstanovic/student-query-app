@@ -42,10 +42,11 @@ class DocumentController extends Controller
 
     /**
      * A document is visible to whoever can see its inquiry: the student who
-     * owns it, faculty with visibility into it (current or past step role),
-     * or a superuser. Mirrors Faculty\InquiryController::hasVisibility, kept
-     * separate rather than shared since this also needs the student-owns
-     * check that controller doesn't.
+     * owns it, faculty whose role appears anywhere in the chain (current,
+     * past, or not-yet-reached step), or a superuser. Mirrors
+     * Faculty\InquiryController::hasVisibility, kept separate rather than
+     * shared since this also needs the student-owns check that controller
+     * doesn't.
      */
     private function canView(Inquiry $inquiry, User $user): bool
     {
@@ -61,12 +62,6 @@ class DocumentController extends Controller
             return false;
         }
 
-        if ($inquiry->currentStep && $inquiry->currentStep->role_id === $user->role_id) {
-            return true;
-        }
-
-        return $inquiry->stepHistory()
-            ->whereHas('chainStep', fn ($q) => $q->where('role_id', $user->role_id))
-            ->exists();
+        return $inquiry->chain->steps()->where('role_id', $user->role_id)->exists();
     }
 }

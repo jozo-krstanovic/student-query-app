@@ -48,7 +48,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <PageContainer size="xl">
+    <PageContainer size="2xl">
       <PageHeader
         title="Admin"
         description="Manage roles, permissions, approval chains, subjects, and users."

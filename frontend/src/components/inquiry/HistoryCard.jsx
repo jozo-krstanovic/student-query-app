@@ -15,7 +15,7 @@ export default function InquiryHistoryCard({ stepHistory }) {
       </CardHeader>
       <CardContent className="space-y-2">
         {stepHistory.map((entry) => (
-          <div key={entry.id} className="text-sm">
+          <div key={entry.id} className="rounded-lg border bg-muted/40 p-3 text-sm">
             <span className="font-medium">{ACTION_LABELS[entry.action] ?? entry.action}</span>
             {' by '}
             {entry.actor.full_name}
@@ -24,7 +24,7 @@ export default function InquiryHistoryCard({ stepHistory }) {
               {' — '}
               {new Date(entry.created_at).toLocaleString()}
             </span>
-            {entry.note && <div className="text-muted-foreground">{entry.note}</div>}
+            {entry.note && <div className="mt-1 text-muted-foreground">{entry.note}</div>}
           </div>
         ))}
       </CardContent>
