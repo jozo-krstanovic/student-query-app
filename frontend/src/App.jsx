@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { SessionProvider, useSession } from '@/lib/SessionContext'
+import { Toaster } from '@/components/ui/sonner'
 import AuthGate from '@/components/layout/AuthGate'
 import InquiriesPage from '@/components/InquiriesPage'
 import AdminPanel from '@/components/admin/AdminPanel'
@@ -20,6 +21,7 @@ function AdminRoute() {
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" />
       <SessionProvider>
         <Routes>
           <Route path="/reset-password" element={<ResetPasswordPage />} />

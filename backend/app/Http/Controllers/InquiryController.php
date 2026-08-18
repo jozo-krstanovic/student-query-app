@@ -6,6 +6,7 @@ use App\Models\Inquiry;
 use App\Models\InquiryComment;
 use App\Models\InquiryStepHistory;
 use App\Models\Subject;
+use App\Services\NotificationService;
 use App\Services\SupabaseStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -114,6 +115,13 @@ class InquiryController extends Controller
 
         $inquiry->load(['subject', 'currentStep.role']);
 
+        NotificationService::notify(
+            NotificationService::usersWithRole($firstStep->role_id),
+            $inquiry,
+            'inquiry_submitted',
+            "New inquiry submitted for {$inquiry->subject->name}."
+        );
+
         return response()->json(['status' => 'ok', 'inquiry' => $inquiry], 201);
     }
 
@@ -133,6 +141,13 @@ class InquiryController extends Controller
         ]);
 
         $comment->load('author');
+
+        NotificationService::notify(
+            NotificationService::usersWithRole($inquiry->currentStep?->role_id),
+            $inquiry,
+            'inquiry_commented',
+            "{$request->user()->full_name} commented on an inquiry."
+        );
 
         return response()->json(['status' => 'ok', 'comment' => $comment], 201);
     }

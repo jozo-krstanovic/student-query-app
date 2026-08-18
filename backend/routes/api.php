@@ -11,6 +11,7 @@ use App\Http\Controllers\Faculty\InquiryController as FacultyInquiryController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\MeController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SubjectController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,10 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/documents/{document}/download', [DocumentController::class, 'download']);
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
+
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
 
     Route::middleware('student')->group(function () {
         Route::get('/inquiries', [InquiryController::class, 'index']);
