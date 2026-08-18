@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { SessionProvider, useSession } from '@/lib/SessionContext'
+import { NotificationsProvider } from '@/lib/NotificationsContext'
+import { Toaster } from '@/components/ui/sonner'
 import AuthGate from '@/components/layout/AuthGate'
 import InquiriesPage from '@/components/InquiriesPage'
 import AdminPanel from '@/components/admin/AdminPanel'
@@ -20,51 +22,54 @@ function AdminRoute() {
 function App() {
   return (
     <BrowserRouter>
+      <Toaster position="top-right" closeButton />
       <SessionProvider>
-        <Routes>
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route
-            path="/"
-            element={
-              <AuthGate>
-                <InquiriesPage />
-              </AuthGate>
-            }
-          />
-          <Route
-            path="/new"
-            element={
-              <AuthGate>
-                <InquiriesPage />
-              </AuthGate>
-            }
-          />
-          <Route
-            path="/:id"
-            element={
-              <AuthGate>
-                <InquiriesPage />
-              </AuthGate>
-            }
-          />
-          <Route
-            path="/admin"
-            element={
-              <AuthGate>
-                <AdminRoute />
-              </AuthGate>
-            }
-          />
-          <Route
-            path="/account"
-            element={
-              <AuthGate>
-                <AccountPage />
-              </AuthGate>
-            }
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <NotificationsProvider>
+          <Routes>
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route
+              path="/"
+              element={
+                <AuthGate>
+                  <InquiriesPage />
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/new"
+              element={
+                <AuthGate>
+                  <InquiriesPage />
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/:id"
+              element={
+                <AuthGate>
+                  <InquiriesPage />
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <AuthGate>
+                  <AdminRoute />
+                </AuthGate>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <AuthGate>
+                  <AccountPage />
+                </AuthGate>
+              }
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </NotificationsProvider>
       </SessionProvider>
     </BrowserRouter>
   )

@@ -2,7 +2,11 @@
 
 return [
 
-    'paths' => ['api/*'],
+    // broadcasting/auth lives outside api/* (registered directly by
+    // Broadcast::routes() in routes/channels.php), but Echo's private-channel
+    // authorizer calls it cross-origin from the frontend just like every
+    // api/* route, so it needs the same CORS treatment.
+    'paths' => ['api/*', 'broadcasting/auth'],
 
     'allowed_methods' => ['*'],
 

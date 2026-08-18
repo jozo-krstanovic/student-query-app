@@ -8,6 +8,7 @@ use App\Models\Inquiry;
 use App\Models\InquiryComment;
 use App\Models\InquiryStepHistory;
 use App\Models\User;
+use App\Services\NotificationService;
 use App\Services\SupabaseStorage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -106,7 +107,23 @@ class InquiryController extends Controller
             ]);
         });
 
-        $inquiry->refresh()->load(['currentStep.role']);
+        $inquiry->refresh()->load(['currentStep.role', 'subject']);
+
+        if ($inquiry->currentStep) {
+            NotificationService::notify(
+                NotificationService::usersWithRole($inquiry->currentStep->role_id),
+                $inquiry,
+                'inquiry_approved',
+                "An inquiry for {$inquiry->subject->name} was approved and is now awaiting {$inquiry->currentStep->role->name}."
+            );
+        } else {
+            NotificationService::notify(
+                [$inquiry->student],
+                $inquiry,
+                'inquiry_completed',
+                "Your inquiry for {$inquiry->subject->name} has been completed."
+            );
+        }
 
         return response()->json(['status' => 'ok', 'inquiry' => $inquiry]);
     }
@@ -137,7 +154,14 @@ class InquiryController extends Controller
             ]);
         });
 
-        $inquiry->refresh();
+        $inquiry->refresh()->load('subject');
+
+        NotificationService::notify(
+            [$inquiry->student],
+            $inquiry,
+            'inquiry_completed',
+            "Your inquiry for {$inquiry->subject->name} has been resolved."
+        );
 
         return response()->json(['status' => 'ok', 'inquiry' => $inquiry]);
     }
@@ -172,7 +196,14 @@ class InquiryController extends Controller
             ]);
         });
 
-        $inquiry->refresh()->load(['currentStep.role']);
+        $inquiry->refresh()->load(['currentStep.role', 'subject']);
+
+        NotificationService::notify(
+            [$inquiry->student],
+            $inquiry,
+            'inquiry_reset',
+            "Your inquiry for {$inquiry->subject->name} was reset to the start of the approval chain."
+        );
 
         return response()->json(['status' => 'ok', 'inquiry' => $inquiry]);
     }
@@ -191,6 +222,13 @@ class InquiryController extends Controller
         ]);
 
         $comment->load('author');
+
+        NotificationService::notify(
+            [$inquiry->student],
+            $inquiry,
+            'inquiry_commented',
+            "{$request->user()->full_name} commented on your inquiry."
+        );
 
         return response()->json(['status' => 'ok', 'comment' => $comment], 201);
     }
