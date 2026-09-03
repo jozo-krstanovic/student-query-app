@@ -51,6 +51,20 @@ export default function RolesTab({ roles, setRoles, permissions, setError }) {
     }
   }
 
+  async function handleToggleActive(role, checked) {
+    setError(null)
+    try {
+      const { role: updatedRole } = await apiFetch(`/api/admin/roles/${role.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: checked }),
+      })
+      setRoles((prev) => prev.map((r) => (r.id === updatedRole.id ? updatedRole : r)))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
       <Card>
@@ -66,6 +80,7 @@ export default function RolesTab({ roles, setRoles, permissions, setError }) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Role</TableHead>
+                  <TableHead className="text-center">Active</TableHead>
                   {permissions.map((permission) => (
                     <TableHead key={permission.id} className="text-center">
                       {permission.key}
@@ -75,12 +90,18 @@ export default function RolesTab({ roles, setRoles, permissions, setError }) {
               </TableHeader>
               <TableBody>
                 {roles.map((role) => (
-                  <TableRow key={role.id}>
+                  <TableRow key={role.id} className={role.is_active ? undefined : 'opacity-60'}>
                     <TableCell>
                       <div className="font-medium">{role.name}</div>
                       {role.description && (
                         <div className="text-xs text-muted-foreground">{role.description}</div>
                       )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={role.is_active}
+                        onCheckedChange={(checked) => handleToggleActive(role, checked)}
+                      />
                     </TableCell>
                     {permissions.map((permission) => (
                       <TableCell key={permission.id} className="text-center">

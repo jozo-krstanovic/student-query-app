@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export default function SubjectsTab({ subjects, setSubjects, chains, setError }) {
   const [name, setName] = useState('')
@@ -39,6 +40,20 @@ export default function SubjectsTab({ subjects, setSubjects, chains, setError })
     }
   }
 
+  async function handleToggleActive(subject, checked) {
+    setError(null)
+    try {
+      const { subject: updatedSubject } = await apiFetch(`/api/admin/subjects/${subject.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_active: checked }),
+      })
+      setSubjects((prev) => prev.map((s) => (s.id === updatedSubject.id ? updatedSubject : s)))
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   return (
     <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
       <Card>
@@ -55,11 +70,12 @@ export default function SubjectsTab({ subjects, setSubjects, chains, setError })
                 <TableRow>
                   <TableHead>Subject</TableHead>
                   <TableHead>Chain</TableHead>
+                  <TableHead className="text-center">Active</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {subjects.map((subject) => (
-                  <TableRow key={subject.id}>
+                  <TableRow key={subject.id} className={subject.is_active ? undefined : 'opacity-60'}>
                     <TableCell>
                       <div className="font-medium">{subject.name}</div>
                       {subject.description && (
@@ -72,6 +88,12 @@ export default function SubjectsTab({ subjects, setSubjects, chains, setError })
                       ) : (
                         <span className="text-xs text-muted-foreground">No chain assigned</span>
                       )}
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox
+                        checked={subject.is_active}
+                        onCheckedChange={(checked) => handleToggleActive(subject, checked)}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
